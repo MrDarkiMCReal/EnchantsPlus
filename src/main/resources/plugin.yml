@@ -1,0 +1,7 @@
+name: EnchantsPlus
+version: '${project.version}'
+main: org.mrdarkimc.enchantsplus.EnchantsPlus
+api-version: '1.16'
+commands:
+  try:
+    description: get
