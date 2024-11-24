@@ -1,9 +1,7 @@
-package org.mrdarkimc.enchantsplus.enchants;
+package org.mrdarkimc.enchantsplus.enchants.enchantList;
 
 import io.papermc.paper.enchantments.EnchantmentRarity;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -12,53 +10,63 @@ import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.entity.EntityCategory;
 import org.bukkit.entity.Item;
 import org.bukkit.event.Event;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.mrdarkimc.enchantsplus.EnchantsPlus;
+import org.mrdarkimc.enchantsplus.enchants.interfaces.IAnvilable;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class AutoSmelt extends Enchantment implements IEnchant {
-    private String displayname = ChatColor.GRAY + "Автоплавка";
-    private int maxlevel;
-    private int startlevel;
+public class AutoSmelt extends Enchantment implements IEnchant, IAnvilable {
+    private String displayname = ChatColor.GRAY + "Автоплавка "; //todo fix hardcode
 
     public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(),"encantmentsplus_autosmelt");
-    private final List<ItemStack> allowedStacks = new ArrayList<>();
-    {
-        allowedStacks.add(new ItemStack(Material.COAL_ORE));
+    @Override
+    public String getDisplayName() {
+        return displayname;
     }
-    public enum AllowedMaterials {
-
+    @Override
+    public String getDisplayLevel() {
+        return "I";
     }
 
+    @Override
+    public List<String> getCustomLore() {
+        return List.of("arr1","arr3");
+    }
 
     public AutoSmelt() {
         super(key);
-        //registerEnchantment(this);
     }
     @Override
     public void accept(Event event){
-        Bukkit.getLogger().info("triggering2");
         if (event instanceof BlockDropItemEvent){
             BlockDropItemEvent e = ((BlockDropItemEvent)event);
+            ItemStack stack = e.getPlayer().getInventory().getItemInMainHand();
+            int multiplier = 1;
+            if (stack.getEnchantments().containsKey(Enchantment.LOOT_BONUS_BLOCKS)){
+                int level = stack.getEnchantments().get(Enchantment.LOOT_BONUS_BLOCKS);
+                double chanceOfGettingMultiplied = ((double) 1 /(level+2)); //0.3 0.2 etc
+                multiplier = (int) ((Math.random() < chanceOfGettingMultiplied) ? (level + 1) : 1);
+            }
             for (Item item : e.getItems()) {
                 switch (item.getItemStack().getType()){
                     case IRON_ORE:
-                        item.setItemStack(new ItemStack(Material.IRON_INGOT));
+                        item.setItemStack(new ItemStack(Material.IRON_INGOT,multiplier));
                         break;
                     case GOLD_ORE:
-                        item.setItemStack(new ItemStack(Material.GOLD_INGOT));
+                        item.setItemStack(new ItemStack(Material.GOLD_INGOT,multiplier));
+                        break;
+                    case COBBLESTONE:
+                        item.setItemStack(new ItemStack(Material.STONE));
+                        break;
+                    case SAND:
+                        item.setItemStack(new ItemStack(Material.GLASS));
                         break;
                 }
             }
@@ -69,22 +77,6 @@ public class AutoSmelt extends Enchantment implements IEnchant {
     public Enchantment getEnchantment() {
         return this;
     }
-
-    @Override
-    public String getDisplayName() {
-        return displayname;
-    }
-
-    public static void registerEnchantment(Enchantment enchantment) throws IllegalArgumentException {
-        try {
-            Field field = Enchantment.class.getDeclaredField("byKey");
-            field.setAccessible(true);
-            field.set(key, enchantment);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Не удалось зарегистрировать зачарование: " + key);
-        }
-    }
-
 
     @NotNull
     @Override

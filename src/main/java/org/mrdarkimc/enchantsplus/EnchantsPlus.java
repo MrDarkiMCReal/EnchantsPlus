@@ -1,13 +1,10 @@
 package org.mrdarkimc.enchantsplus;
 
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.mrdarkimc.enchantsplus.enchants.AutoSmelt;
 import org.mrdarkimc.enchantsplus.enchants.Enchants;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
 import org.mrdarkimc.enchantsplus.listeners.EnchantListener;
 
-import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,6 +22,8 @@ public final class EnchantsPlus extends JavaPlugin {
         setUpEnchants();
         getServer().getPluginManager().registerEvents(new EnchantListener(),this);
         getServer().getPluginCommand("try").setExecutor(new CommandEnchant());
+        //new AnvilRecipeListener(instance);
+        //new AnvilRecipes();
 
     }
     public void setUpEnchants() {

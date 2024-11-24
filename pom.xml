@@ -23,8 +23,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
         <configuration>
-          <source>9</source>
-          <target>9</target>
+          <source>16</source>
+          <target>16</target>
         </configuration>
       </plugin>
       <plugin>
@@ -51,6 +51,10 @@
 
   <repositories>
       <repository>
+          <id>jitpack.io</id>
+          <url>https://jitpack.io</url>
+      </repository>
+      <repository>
           <id>purpur</id>
           <name>Purpur Maven Repo</name>
           <url>https://repo.purpurmc.org/snapshots</url>
@@ -66,11 +70,17 @@
   </repositories>
 
   <dependencies>
+
       <dependency>
           <groupId>org.purpurmc.purpur</groupId>
           <artifactId>purpur-api</artifactId>
           <version>1.16.5-R0.1-SNAPSHOT</version>
           <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.mrdarkimc</groupId>
+          <artifactId>SatanicLib</artifactId>
+          <version>1.0</version>
       </dependency>
   </dependencies>
 </project>
