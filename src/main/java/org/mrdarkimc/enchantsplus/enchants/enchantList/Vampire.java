@@ -16,21 +16,22 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.mrdarkimc.enchantsplus.EnchantsPlus;
+import org.mrdarkimc.enchantsplus.enchants.EnchantmentWrapper;
 import org.mrdarkimc.enchantsplus.enchants.Enchants;
-import org.mrdarkimc.enchantsplus.enchants.interfaces.IAnvilable;
-import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
+import org.mrdarkimc.enchantsplus.enchants.interfaces.*;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class Vampire extends Enchantment implements IEnchant, IAnvilable {
+public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChance, Reloadable {
     private String displayname = ChatColor.GRAY + "Вампиризм "; //todo fix hardcode
 
     public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(), "encantmentsplus_vampire");
 
     public Vampire() {
         super(key);
+        Reloadable.register(this);
     }
     private static double chance = 0.3; //todo hardcode
     private static double triggerChance = 0.3; //todo hardcode
@@ -45,12 +46,13 @@ public class Vampire extends Enchantment implements IEnchant, IAnvilable {
     public void accept(Event event) {
         if (event instanceof EntityDamageByEntityEvent e) {
             if (e.getDamager() instanceof Player attacker) {
-
-                int encant_level = attacker.getInventory().getItemInMainHand().getEnchantLevel(this);
-                double damagerHP = attacker.getHealth() + formula(e.getFinalDamage(), encant_level);
-                double damagerMaxHP = attacker.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-                double finalHelth = Math.min(damagerHP, damagerMaxHP);
-                attacker.setHealth(finalHelth);
+                if (Math.random() > triggerChance) {
+                    int encant_level = attacker.getInventory().getItemInMainHand().getEnchantLevel(this);
+                    double damagerHP = attacker.getHealth() + formula(e.getFinalDamage(), encant_level);
+                    double damagerMaxHP = attacker.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+                    double finalHelth = Math.min(damagerHP, damagerMaxHP);
+                    attacker.setHealth(finalHelth);
+                }
             }
         }
     }
@@ -77,20 +79,10 @@ public class Vampire extends Enchantment implements IEnchant, IAnvilable {
         return List.of("pen", "pej2");
     }
 
-    @NotNull
-    @Override
-    public String getName() {
-        return displayname;
-    }
 
     @Override
     public int getMaxLevel() {
         return 3;
-    }
-
-    @Override
-    public int getStartLevel() {
-        return 1;
     }
 
     @NotNull
@@ -100,62 +92,12 @@ public class Vampire extends Enchantment implements IEnchant, IAnvilable {
     }
 
     @Override
-    public boolean isTreasure() {
-        return false;
-    }
-
-    @Override
-    public boolean isCursed() {
-        return false;
-    }
-
-    @Override
-    public boolean conflictsWith(@NotNull Enchantment enchantment) {
-        return false;
-    }
-
-    @Override
-    public boolean canEnchantItem(@NotNull ItemStack itemStack) {
-        return !itemStack.hasEnchant(this) && Enchants.getTarget(itemStack).equals(this.getItemTarget());
-    }
-
-    @NotNull
-    @Override
-    public Component displayName(int i) {
-        return Component.text("Vampire");
-    }
-
-    @Override
-    public boolean isTradeable() {
-        return false;
-    }
-
-    @Override
-    public boolean isDiscoverable() {
-        return false;
-    }
-
-    @NotNull
-    @Override
-    public EnchantmentRarity getRarity() {
-        return EnchantmentRarity.COMMON;
-    }
-
-    @Override
-    public float getDamageIncrease(int i, @NotNull EntityCategory entityCategory) {
-        return 0;
-    }
-
-    @NotNull
-    @Override
-    public Set<EquipmentSlot> getActiveSlots() {
-        Set<EquipmentSlot> set = new HashSet<>();
-        set.add(EquipmentSlot.HAND);
-        return set;
-    }
-
-    @Override
     public Enchantment getEnchantment() {
         return this;
+    }
+
+    @Override
+    public void reload() {
+
     }
 }

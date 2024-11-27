@@ -22,9 +22,12 @@ import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.mrdarkimc.enchantsplus.EnchantsPlus;
 import org.mrdarkimc.enchantsplus.enchants.Enchants;
 import org.mrdarkimc.enchantsplus.enchants.enchantList.Poison;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
+import org.mrdarkimc.enchantsplus.enchants.interfaces.Reloadable;
 import org.mrdarkimc.enchantsplus.utils.Randomizer;
 
 import java.util.*;
@@ -32,13 +35,13 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 
-public class EnchantListener implements Listener {
+public class EnchantListener implements Listener, Reloadable {
     @EventHandler
     void onEnchant(EnchantItemEvent event) {
         ItemStack stack = event.getItem();
         double globalChance = 0.3; //todo hardcode
         if (Math.random() < globalChance) {
-            doEnchant(stack,Enchants.getTarget(stack));
+            doEnchant(stack,event.getEnchantsToAdd().keySet().stream().findFirst().get().getItemTarget()); //Enchants.getTarget(stack)
         }
 
     }
@@ -62,15 +65,21 @@ public class EnchantListener implements Listener {
         ItemMeta meta = book.getItemMeta();
         EnchantmentStorageMeta storedEnc = (EnchantmentStorageMeta) meta;
         Map<Enchantment, Integer> enchantsMap = storedEnc.getStoredEnchants();
+        boolean hasBeenModified = false;
         for (Enchantment enchantment : enchantsMap.keySet()) {
             if (enchantment instanceof IEnchant) {
                 if (enchantment.canEnchantItem(cloned)) {
                     Enchants.applyCustomEnchant(cloned, enchantment, enchantsMap.get(enchantment));
+                    hasBeenModified = true;
                 }
-
+            }else {
+                ItemMeta clonedMeta =  cloned.getItemMeta();
+                clonedMeta.addEnchant(enchantment,enchantsMap.get(enchantment),true);
+                cloned.setItemMeta(meta);
+                hasBeenModified = true;
             }
         }
-        if (!cloned.equals(inv.getFirstItem())) {
+        if (hasBeenModified) {
             e.setResult(cloned);
             anvils.add(e.getInventory());
         }
@@ -113,7 +122,6 @@ public class EnchantListener implements Listener {
                         break;
                 }
             }
-            return;
         }
     }
     @EventHandler(priority = EventPriority.HIGH)
@@ -125,38 +133,15 @@ public class EnchantListener implements Listener {
         return mode == GameMode.CREATIVE || mode == GameMode.SPECTATOR;
     }
 
-//    @EventHandler
-//    void onClick(InventoryClickEvent e) {
-//        if (e.getInventory() instanceof AnvilInventory) {
-//            AnvilInventory anvil = (AnvilInventory) e.getInventory();
-//            ItemStack result = anvil.getResult();
-//            HumanEntity player = e.getWhoClicked();
-//            Bukkit.getLogger().info("result is: " + result.toString());
-//            InventoryView view = e.getView().getPlayer().getOpenInventory();
-//            if (e.getCurrentItem().equals(result)) {
-//                Bukkit.getLogger().info("trigger equals");
-//                player.setItemOnCursor(result);
-//            }
-//
-//        }
-//    }
 
     public void handleItemStack(ItemStack stack, Event e) {
-        List<Enchantment> enchantmentsOrder = List.of(Enchants.DOZER, Enchants.AUTOSMELT, Enchants.MAGNET, Enchants.VAMPIRE, Enchants.POISON);
+        List<Enchantment> enchantmentsOrder = List.of(Enchants.DOZER, Enchants.AUTOSMELT, Enchants.MAGNET, Enchants.VAMPIRE, Enchants.POISON); //ordered list!!!!!
         for (Enchantment enchantment : enchantmentsOrder) {
             Set<Enchantment> enchantmentIntegerMap = stack.getEnchantments().keySet();
             if (enchantmentIntegerMap.contains(enchantment)){
                 ((IEnchant) enchantment).accept(e);
             }
         }
-//        stack.getEnchantments().forEach((enchant, level) -> {
-//            if (enchant instanceof IEnchant) {
-//                ((IEnchant) enchant).accept(e);
-//                Bukkit.getLogger().info("trigger-1");
-//                //todo переделать на List<IEnchant> и в определенном порядке триггерить энчанты
-        //или через IEnchant getPriority
-//            }
-//        });
     }
 
     @EventHandler
@@ -178,7 +163,15 @@ public class EnchantListener implements Listener {
                 Bukkit.getLogger().info("original dmg: " + event.getDamage());
                 double damage = Poison.increaseDamage(player, event.getDamage());
                 Bukkit.getLogger().info("Increased dmg: " + damage);
-                event.setDamage(damage);
+                event.setDamage(damage); //todo is this really necessary
+                if (damage+0.5 > 1){
+                    new BukkitRunnable(){
+                        @Override
+                        public void run() {
+                            player.damage(damage);
+                        }
+                    }.runTaskLater(EnchantsPlus.getInstance(),10);
+                }
             }
         }
     }
@@ -193,5 +186,13 @@ public class EnchantListener implements Listener {
             ItemStack stack = player.getInventory().getItemInMainHand();
             handleItemStack(stack, e);
         }
+    }
+    public void deserealize(){
+        EnchantsPlus.config.get().getDouble("global.customEnchantChance");
+    }
+
+    @Override
+    public void reload() {
+        deserealize();
     }
 }

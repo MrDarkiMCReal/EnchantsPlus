@@ -2,6 +2,8 @@ name: EnchantsPlus
 version: '${project.version}'
 main: org.mrdarkimc.enchantsplus.EnchantsPlus
 api-version: '1.16'
+softdepend:
+  - PlaceholderAPI
 commands:
   try:
     description: get

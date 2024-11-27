@@ -1,6 +1,8 @@
 package org.mrdarkimc.enchantsplus;
 
 import org.bukkit.plugin.java.JavaPlugin;
+import org.mrdarkimc.SatanicLib.SatanicLib;
+import org.mrdarkimc.SatanicLib.configsetups.Configs;
 import org.mrdarkimc.enchantsplus.anvilHandler.AnvilRecipeListener;
 import org.mrdarkimc.enchantsplus.anvilHandler.AnvilRecipes;
 import org.mrdarkimc.enchantsplus.enchants.Enchants;
@@ -13,6 +15,7 @@ import java.util.Set;
 public final class EnchantsPlus extends JavaPlugin {
     public final Set<IEnchant> listOfEnchants = new HashSet<>();
     private static EnchantsPlus instance;
+    public static Configs config;
 
     public static EnchantsPlus getInstance() {
         return instance;
@@ -21,6 +24,8 @@ public final class EnchantsPlus extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        SatanicLib.setupLib(this);
+        config = Configs.Defaults.setupConfig();
         setUpEnchants();
         getServer().getPluginManager().registerEvents(new EnchantListener(),this);
         getServer().getPluginCommand("try").setExecutor(new CommandEnchant());

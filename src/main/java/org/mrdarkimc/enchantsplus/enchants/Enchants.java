@@ -1,33 +1,40 @@
 package org.mrdarkimc.enchantsplus.enchants;
 
-import org.bukkit.Material;
+import me.clip.placeholderapi.PlaceholderAPI;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.mrdarkimc.SatanicLib.Utils;
+import org.mrdarkimc.enchantsplus.EnchantsPlus;
 import org.mrdarkimc.enchantsplus.enchants.enchantList.*;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
-import org.mrdarkimc.enchantsplus.utils.Randomizer;
+import org.mrdarkimc.enchantsplus.enchants.interfaces.Reloadable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-public class Enchants {
+public class Enchants implements Reloadable {
     public Enchants() {
         registerNewEnchantments(AUTOSMELT);
         registerNewEnchantments(DOZER);
         registerNewEnchantments(MAGNET);
         registerNewEnchantments(VAMPIRE);
         registerNewEnchantments(POISON);
-
         //
     }
 
     public static final List<Enchantment> customEnchants = new ArrayList<>();
-    public static List<IEnchant> getEnchants(){
-        return customEnchants.stream().map((enchantment -> (IEnchant)enchantment)).collect(Collectors.toList());
+
+    public static List<IEnchant> getEnchants() {
+        return customEnchants.stream().map((enchantment -> (IEnchant) enchantment)).collect(Collectors.toList());
     }
 
     public static final Enchantment AUTOSMELT = new AutoSmelt();
@@ -38,16 +45,15 @@ public class Enchants {
 
     public static ItemStack applyCustomEnchant(ItemStack stack, Enchantment enchant, int lvl) { //todo Iecnant заменить на Enchantmetns и везде использовать Encants.AUTOSMELT
         ItemMeta meta = stack.getItemMeta();
-        if (meta.getEnchants().containsKey(enchant)){
-            if (stack.getEnchantLevel(enchant) < lvl){
+        if (meta.getEnchants().containsKey(enchant)) {
+            if (stack.getEnchantLevel(enchant) < lvl) {
                 meta.removeEnchant(enchant);
                 meta.setLore(meta.getLore().stream().filter(line -> (!line.startsWith(((IEnchant) enchant).getDisplayName()))).collect(Collectors.toList())); //удаляем старый лор
-                setCustomLore(meta,enchant,lvl);
+                setCustomLore(meta, enchant, lvl);
                 return stack;
             }
             return stack;
-        }
-         else {
+        } else {
 //        if (!getTarget(stack).equals(enchant.getItemTarget()))
 //            return stack;
             setCustomLore(meta, enchant, lvl);
@@ -56,7 +62,8 @@ public class Enchants {
             return stack;
         }
     }
-    private static void setCustomLore(ItemMeta meta, Enchantment enchant, int lvl){
+
+    private static void setCustomLore(ItemMeta meta, Enchantment enchant, int lvl) {
         List<String> lore = meta.getLore();
         List<String> newLore = new ArrayList<>();
         newLore.add(((IEnchant) enchant).getDisplayName() + Enchants.getDisplayLevel(lvl));
@@ -65,7 +72,8 @@ public class Enchants {
         }
         meta.setLore(newLore);
     }
-    public static EnchantmentTarget getTarget(ItemStack stack){
+
+    public static EnchantmentTarget getTarget(ItemStack stack) {
 
         return switch (stack.getType()) {
             case WOODEN_SWORD, STONE_SWORD, IRON_SWORD, GOLDEN_SWORD, DIAMOND_SWORD, NETHERITE_SWORD, TRIDENT, WOODEN_AXE, STONE_AXE, IRON_AXE, GOLDEN_AXE, DIAMOND_AXE, NETHERITE_AXE ->
@@ -78,43 +86,45 @@ public class Enchants {
         };
     }
 
+    public static Map<Integer, String> levelDisplay = new HashMap<>();
 
     public static String getDisplayLevel(int level) { //todo hardcode
-        switch (level) {
-            case 1:
-                return "I";
-
-            case 2:
-                return "II";
-
-            case 3:
-                return "III";
-
-            case 4:
-                return "IV";
-
-            case 5:
-                return "V";
-
-            case 6:
-                return "VI";
-
-            case 7:
-                return "VII";
-
-            case 8:
-                return "VIII";
-
-            case 9:
-                return "IX";
-
-            case 10:
-                return "I0";
-
-            default:
-                return String.valueOf(level);
-
-        }
+        return levelDisplay.get(level);
+//        switch (level) {
+//            case 1:
+//                return "I";
+//
+//            case 2:
+//                return "II";
+//
+//            case 3:
+//                return "III";
+//
+//            case 4:
+//                return "IV";
+//
+//            case 5:
+//                return "V";
+//
+//            case 6:
+//                return "VI";
+//
+//            case 7:
+//                return "VII";
+//
+//            case 8:
+//                return "VIII";
+//
+//            case 9:
+//                return "IX";
+//
+//            case 10:
+//                return "I0";
+//
+//            default:
+//                return String.valueOf(level);
+//
+//        }
     }
 
 
@@ -130,5 +140,25 @@ public class Enchants {
             register = false;
             throw new RuntimeException(e);
         }
+    }
+
+    public void deserealize() {
+        FileConfiguration file = EnchantsPlus.config.get();
+        levelDisplay.clear();
+        try {
+            for (int i = 1; i < 10; i++) {
+                String value = PlaceholderAPI.setPlaceholders(null, Utils.translateHex(file.getString("global.levels." + i)));
+                levelDisplay.put(1, value);
+            }
+        }catch (NullPointerException e){
+            Bukkit.getLogger().info(ChatColor.RED + "Ошибка в настройках уровня. Уровней должно быть минимум 10");
+        }
+
+
+    }
+
+    @Override
+    public void reload() {
+
     }
 }
