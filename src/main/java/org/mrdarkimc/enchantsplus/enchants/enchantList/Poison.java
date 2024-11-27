@@ -9,28 +9,31 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.entity.EntityCategory;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.mrdarkimc.enchantsplus.EnchantsPlus;
 import org.mrdarkimc.enchantsplus.enchants.Enchants;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IAnvilable;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
+import org.mrdarkimc.enchantsplus.enchants.interfaces.TriggerChance;
 import org.mrdarkimc.enchantsplus.utils.Randomizer;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public class AutoSmelt extends Enchantment implements IEnchant, IAnvilable {
-    private String displayname = ChatColor.GRAY + "Автоплавка "; //todo fix hardcode
-    private static double chance = 0.3; //todo hardcode
-    public double getEnchantChance(){
-        return chance;
-    }
-    public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(),"encantmentsplus_autosmelt");
+public class Poison extends Enchantment implements IEnchant, IAnvilable, TriggerChance {
+    private String displayname = ChatColor.GRAY + "Ядовитый клинок "; //todo fix hardcode
+
+    public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(),"encantmentsplus_poison");
     @Override
     public String getDisplayName() {
         return displayname;
@@ -41,41 +44,48 @@ public class AutoSmelt extends Enchantment implements IEnchant, IAnvilable {
         return List.of("arr1","arr3");
     }
 
-    public AutoSmelt() {
+    public Poison() {
         super(key);
     }
+    private static double chance = 0.3; //todo hardcode
+    private static double triggerChance = 0.3; //todo hardcode
+    public double getEnchantChance(){
+        return chance;
+    }
+    public double getTriggerChance(){
+        return triggerChance;
+    }
+    public static double increaseDamage(Player player, double damage){
+    int level = poisonedPlayers.get(player);
+    return ((damage+0.5) * (double)level);
+    }
+    public static Map<Player, Integer> poisonedPlayers = new HashMap<>();
     @Override
-    public void accept(Event event){
-        if (event instanceof BlockDropItemEvent) {
-            BlockDropItemEvent e = ((BlockDropItemEvent) event);
-            ItemStack stack = e.getPlayer().getInventory().getItemInMainHand();
-            convertItems(e.getItems(),stack);
+    public void accept(Event event) {
+        if (event instanceof EntityDamageByEntityEvent e) {
+            if (e.getEntity() instanceof Player victim) {
+                if (!poisonedPlayers.containsKey(victim)){
+                    if (Math.random() > triggerChance) {
+                        poisonPlayer(victim, ((Player) e.getDamager()).getInventory().getItemInMainHand().getEnchantLevel(this));
+                    }
+
+                }
+
+
+            }
         }
     }
-    static void convertItems(List<Item> itemlist, ItemStack stack){
-        for (Item item : itemlist) {
-            int multiplier = 1;
-            if (stack.getEnchantments().containsKey(Enchantment.LOOT_BONUS_BLOCKS)){
-                int level = stack.getEnchantments().get(Enchantment.LOOT_BONUS_BLOCKS);
-                double chanceOfGettingMultiplied = ((double) 1 /(level+2)); //0.3 0.2 etc
-                multiplier = (int) ((Math.random() < chanceOfGettingMultiplied) ? (level + 1) : 1);
-            }
 
-            switch (item.getItemStack().getType()){
-                case IRON_ORE:
-                    item.setItemStack(new ItemStack(Material.IRON_INGOT,multiplier));
-                    break;
-                case GOLD_ORE:
-                    item.setItemStack(new ItemStack(Material.GOLD_INGOT,multiplier));
-                    break;
-                case COBBLESTONE:
-                    item.setItemStack(new ItemStack(Material.STONE));
-                    break;
-                case SAND:
-                    item.setItemStack(new ItemStack(Material.GLASS));
-                    break;
+    public void poisonPlayer(Player player, int levelOfEnchantment){
+        poisonedPlayers.put(player, levelOfEnchantment);
+        player.addPotionEffect(new PotionEffect(PotionEffectType.POISON,200,1,true)); //todo hardcode
+        new BukkitRunnable(){
+
+            @Override
+            public void run() {
+            poisonedPlayers.remove(player);
             }
-        }
+        }.runTaskLaterAsynchronously(EnchantsPlus.getInstance(),200); //todo hardcode
     }
 
     @Override
@@ -91,7 +101,7 @@ public class AutoSmelt extends Enchantment implements IEnchant, IAnvilable {
 
     @Override
     public int getMaxLevel() {
-        return 1;
+        return 3;
     }
 
     @Override
@@ -102,7 +112,7 @@ public class AutoSmelt extends Enchantment implements IEnchant, IAnvilable {
     @NotNull
     @Override
     public EnchantmentTarget getItemTarget() {
-        return EnchantmentTarget.TOOL;
+        return EnchantmentTarget.WEAPON;
     }
 
     @Override
@@ -128,7 +138,7 @@ public class AutoSmelt extends Enchantment implements IEnchant, IAnvilable {
     @NotNull
     @Override
     public Component displayName(int i) {
-        return Component.text(ChatColor.GRAY + displayname + "I");
+        return Component.text(displayname);
     }
 
     @Override

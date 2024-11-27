@@ -1,6 +1,8 @@
 package org.mrdarkimc.enchantsplus;
 
 import org.bukkit.plugin.java.JavaPlugin;
+import org.mrdarkimc.enchantsplus.anvilHandler.AnvilRecipeListener;
+import org.mrdarkimc.enchantsplus.anvilHandler.AnvilRecipes;
 import org.mrdarkimc.enchantsplus.enchants.Enchants;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
 import org.mrdarkimc.enchantsplus.listeners.EnchantListener;

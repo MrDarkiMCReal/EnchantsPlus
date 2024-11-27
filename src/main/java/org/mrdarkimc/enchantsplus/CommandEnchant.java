@@ -20,7 +20,7 @@ public class CommandEnchant implements CommandExecutor {
         ItemStack stack = new ItemStack(Material.ENCHANTED_BOOK);
         ItemMeta meta = stack.getItemMeta();
         EnchantmentStorageMeta storedEnc = (EnchantmentStorageMeta) meta;
-        meta.setLore(List.of(((IEnchant) enchantment).getDisplayName() + ((IEnchant) enchantment).getDisplayLevel()));
+        meta.setLore(List.of(((IEnchant) enchantment).getDisplayName() + Enchants.getDisplayLevel(level)));
 
         storedEnc.addStoredEnchant(enchantment,level,true);
             stack.setItemMeta(storedEnc);
@@ -31,9 +31,37 @@ public class CommandEnchant implements CommandExecutor {
         if (commandSender instanceof Player){
             Player player = (Player) commandSender;
             ItemStack stack = player.getInventory().getItemInMainHand();
-            Enchants.applyCustomEnchant(stack,Enchants.DOZER,1);
-            player.getInventory().addItem(getCustomBook(Enchants.DOZER,1));
-            player.updateInventory();
+            switch (strings[0]){
+                case "dozer":
+                    if (Enchants.DOZER.canEnchantItem(stack)) {
+                        Enchants.applyCustomEnchant(stack, Enchants.DOZER, 1);
+                    }
+                    player.getInventory().addItem(getCustomBook(Enchants.DOZER,1));
+                    break;
+                case "autosmelt":
+                    Enchants.applyCustomEnchant(stack,Enchants.AUTOSMELT,1);
+                    player.getInventory().addItem(getCustomBook(Enchants.AUTOSMELT,1));
+                    break;
+                case "magnet":
+                    Enchants.applyCustomEnchant(stack,Enchants.MAGNET,1);
+                    player.getInventory().addItem(getCustomBook(Enchants.MAGNET,1));
+                    break;
+                case "vampire":
+                    Enchants.applyCustomEnchant(stack,Enchants.VAMPIRE,Integer.parseInt(strings[1]));
+                    player.getInventory().addItem(getCustomBook(Enchants.VAMPIRE,Integer.parseInt(strings[1])));
+                    break;
+                case "poison":
+                    Enchants.applyCustomEnchant(stack,Enchants.POISON,Integer.parseInt(strings[1]));
+                    player.getInventory().addItem(getCustomBook(Enchants.POISON,Integer.parseInt(strings[1])));
+                    break;
+                case "all":
+                    player.getInventory().addItem(getCustomBook(Enchants.DOZER,1));
+                    player.getInventory().addItem(getCustomBook(Enchants.AUTOSMELT,1));
+                    player.getInventory().addItem(getCustomBook(Enchants.MAGNET,1));
+                    player.getInventory().addItem(getCustomBook(Enchants.VAMPIRE,Integer.parseInt(strings[1])));
+                    player.getInventory().addItem(getCustomBook(Enchants.POISON,Integer.parseInt(strings[1])));
+                    break;
+            }
 
         }
         return true;
