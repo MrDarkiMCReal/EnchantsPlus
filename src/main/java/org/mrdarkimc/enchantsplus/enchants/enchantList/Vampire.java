@@ -1,44 +1,44 @@
 package org.mrdarkimc.enchantsplus.enchants.enchantList;
 
-import io.papermc.paper.enchantments.EnchantmentRarity;
-import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
-import org.bukkit.entity.EntityCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.mrdarkimc.SatanicLib.Debugger;
 import org.mrdarkimc.enchantsplus.EnchantsPlus;
 import org.mrdarkimc.enchantsplus.enchants.EnchantmentWrapper;
-import org.mrdarkimc.enchantsplus.enchants.Enchants;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.*;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChance, Reloadable {
-    private String displayname = ChatColor.GRAY + "Вампиризм "; //todo fix hardcode
+public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChance, Reloadable, Infoable {
 
     public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(), "encantmentsplus_vampire");
+    private String displayname = ChatColor.GRAY + "Вампиризм "; //todo fix hardcode
+    private static double chance = 0.3; //todo hardcode
+    private static double triggerChance = 0.3; //todo hardcode
+    public Map<Integer, Double> levelMultiplierMap = new HashMap<>();
 
     public Vampire() {
         super(key);
         Reloadable.register(this);
+        deserealize();
     }
-    private static double chance = 0.3; //todo hardcode
-    private static double triggerChance = 0.3; //todo hardcode
-    public double getEnchantChance(){
+
+    public double getEnchantChance() {
         return chance;
     }
-    public double getTriggerChance(){
+
+    public double getTriggerChance() {
         return triggerChance;
     }
 
@@ -46,9 +46,14 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
     public void accept(Event event) {
         if (event instanceof EntityDamageByEntityEvent e) {
             if (e.getDamager() instanceof Player attacker) {
-                if (Math.random() > triggerChance) {
+                double rand = ((double) Math.round((Math.random() * 100)) / 100);
+                Debugger.chat("[vampire] Trigger chance: " + triggerChance, 4);
+                Debugger.chat("[vampire] Random is: " + rand, 4);
+                if (rand <= triggerChance) {
                     int encant_level = attacker.getInventory().getItemInMainHand().getEnchantLevel(this);
                     double damagerHP = attacker.getHealth() + formula(e.getFinalDamage(), encant_level);
+                    Debugger.chat("Final damage: " + e.getFinalDamage(), 4);
+                    Debugger.chat("Health to restore: " + formula(e.getFinalDamage(), encant_level), 4);
                     double damagerMaxHP = attacker.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
                     double finalHelth = Math.min(damagerHP, damagerMaxHP);
                     attacker.setHealth(finalHelth);
@@ -58,15 +63,18 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
     }
 
     double formula(double finalDamage, int level) {
-        switch (level) {
-            case 1:
-                return finalDamage * 0.15;
-            case 2:
-                return finalDamage * 0.3;
-            case 3:
-                return finalDamage * 0.45;
-            default: return finalDamage * 0.45;
+        return levelMultiplierMap.get(level) * finalDamage;
+    }
+
+    public void deserealize() {
+        levelMultiplierMap.clear();
+        ConfigurationSection section = EnchantsPlus.config.get().getConfigurationSection("enchants.vampire.percentOfDamage");
+        Set<String> set = section.getKeys(false);
+        for (String key : set) {
+            levelMultiplierMap.put(Integer.parseInt(key), section.getDouble(key));
         }
+        triggerChance = EnchantsPlus.config.get().getDouble("enchants.vampire.triggerChance");
+        chance = EnchantsPlus.config.get().getDouble("enchants.vampire.ItemEnchantChance");
     }
 
     @Override
@@ -78,7 +86,6 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
     public List<String> getCustomLore() {
         return List.of("pen", "pej2");
     }
-
 
     @Override
     public int getMaxLevel() {
@@ -98,6 +105,17 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
 
     @Override
     public void reload() {
+        deserealize();
+    }
 
+    @Override
+    public void printInfo() {
+        Debugger.chat("[vampire] Cached displayname: " + displayname,1);
+        Debugger.chat("[vampire] Cached enchant chance: " + chance,1);
+        Debugger.chat("[vampire] Cached trigger chance: " + triggerChance,1);
+        Debugger.chat("[vampire] Cached levels: ",1);
+        levelMultiplierMap.forEach((key,value) -> {
+            Debugger.chat("Level: " + key + " Multiplier: " + value,4);
+        });
     }
 }

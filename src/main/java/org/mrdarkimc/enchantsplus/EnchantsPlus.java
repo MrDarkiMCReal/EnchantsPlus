@@ -1,18 +1,20 @@
 package org.mrdarkimc.enchantsplus;
 
 import org.bukkit.plugin.java.JavaPlugin;
+import org.mrdarkimc.SatanicLib.Debugger;
 import org.mrdarkimc.SatanicLib.SatanicLib;
 import org.mrdarkimc.SatanicLib.configsetups.Configs;
-import org.mrdarkimc.enchantsplus.anvilHandler.AnvilRecipeListener;
-import org.mrdarkimc.enchantsplus.anvilHandler.AnvilRecipes;
 import org.mrdarkimc.enchantsplus.enchants.Enchants;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
-import org.mrdarkimc.enchantsplus.listeners.EnchantListener;
+import org.mrdarkimc.enchantsplus.enchants.interfaces.Reloadable;
+import org.mrdarkimc.enchantsplus.listeners.AnvilListener;
+import org.mrdarkimc.enchantsplus.listeners.EnchantsLogic;
+import org.mrdarkimc.enchantsplus.listeners.ItemEnchantListener;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public final class EnchantsPlus extends JavaPlugin {
+public final class EnchantsPlus extends JavaPlugin implements Reloadable {
     public final Set<IEnchant> listOfEnchants = new HashSet<>();
     private static EnchantsPlus instance;
     public static Configs config;
@@ -27,8 +29,11 @@ public final class EnchantsPlus extends JavaPlugin {
         SatanicLib.setupLib(this);
         config = Configs.Defaults.setupConfig();
         setUpEnchants();
-        getServer().getPluginManager().registerEvents(new EnchantListener(),this);
+        getServer().getPluginManager().registerEvents(new EnchantsLogic(),this);
+        getServer().getPluginManager().registerEvents(new AnvilListener(),this);
+        getServer().getPluginManager().registerEvents(new ItemEnchantListener(),this);
         getServer().getPluginCommand("try").setExecutor(new CommandEnchant());
+        new Debugger();
         //new AnvilRecipeListener(instance);
         //new AnvilRecipes();
 
@@ -63,4 +68,8 @@ public final class EnchantsPlus extends JavaPlugin {
         // Plugin shutdown logic
     }
 
+    @Override
+    public void reload() {
+        config.reloadConfig();
+    }
 }

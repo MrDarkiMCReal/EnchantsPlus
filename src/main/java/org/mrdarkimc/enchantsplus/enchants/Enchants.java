@@ -1,13 +1,20 @@
 package org.mrdarkimc.enchantsplus.enchants;
 
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.mrdarkimc.SatanicLib.Debugger;
 import org.mrdarkimc.SatanicLib.Utils;
 import org.mrdarkimc.enchantsplus.EnchantsPlus;
 import org.mrdarkimc.enchantsplus.enchants.enchantList.*;
@@ -23,6 +30,7 @@ import java.util.stream.Collectors;
 
 public class Enchants implements Reloadable {
     public Enchants() {
+        deserealize();
         registerNewEnchantments(AUTOSMELT);
         registerNewEnchantments(DOZER);
         registerNewEnchantments(MAGNET);
@@ -43,25 +51,118 @@ public class Enchants implements Reloadable {
     public static final Enchantment VAMPIRE = new Vampire();
     public static final Enchantment POISON = new Poison();
 
-    public static ItemStack applyCustomEnchant(ItemStack stack, Enchantment enchant, int lvl) { //todo Iecnant заменить на Enchantmetns и везде использовать Encants.AUTOSMELT
-        ItemMeta meta = stack.getItemMeta();
-        if (meta.getEnchants().containsKey(enchant)) {
-            if (stack.getEnchantLevel(enchant) < lvl) {
-                meta.removeEnchant(enchant);
-                meta.setLore(meta.getLore().stream().filter(line -> (!line.startsWith(((IEnchant) enchant).getDisplayName()))).collect(Collectors.toList())); //удаляем старый лор
-                setCustomLore(meta, enchant, lvl);
-                return stack;
-            }
-            return stack;
-        } else {
-//        if (!getTarget(stack).equals(enchant.getItemTarget()))
-//            return stack;
-            setCustomLore(meta, enchant, lvl);
-            meta.addEnchant(enchant, lvl, true);
-            stack.setItemMeta(meta);
-            return stack;
+    public static ItemStack applyCustomEnchant(ItemStack stack, Map<Enchantment, Integer> enchats) {
+        if (stack.getType().equals(Material.BOOK)) {
+            return doEnchantBook(stack, enchats);
         }
+        ItemMeta customMeta = stack.getItemMeta();
+        ItemMeta meta = stack.getItemMeta();
+        for (Enchantment enchantment : enchats.keySet()) {
+            if (enchantment instanceof IEnchant) {
+                //enchant or increase level of custom enchant
+
+                if (customMeta.getEnchants().containsKey(enchantment)) {
+                    if (customMeta.getEnchantLevel(enchantment) < enchats.get(enchantment)) {
+                            reEnchantCustom(stack,enchantment,enchats.get(enchantment));
+                        return stack;
+                    }
+                    return null;
+                } else {
+                    setCustomLore(customMeta, enchantment, enchats.get(enchantment));
+                    customMeta.addEnchant(enchantment, enchats.get(enchantment), true);
+                    stack.setItemMeta(customMeta);
+                    setEnchantingColor(stack);
+                    return stack;
+                }
+            } else {
+                //enchant or increase level of default enchant
+
+                if (meta.getEnchants().containsKey(enchantment)) {
+                    if (stack.getEnchantLevel(enchantment) < enchats.get(enchantment)) {
+                        meta.addEnchant(enchantment, enchats.get(enchantment), true);
+                    }else {
+                        return null;
+                    }
+                    return stack; //todo написал так
+                } else {
+                    meta.addEnchant(enchantment, enchats.get(enchantment), true);
+                }
+
+
+            }
+        }
+        stack.setItemMeta(meta);
+        return stack;
     }
+    public static void setEnchantingColor(ItemStack cloned){
+        Component displayName = cloned.getItemMeta().displayName();
+
+        if (displayName == null) {
+
+            displayName = Component.translatable(cloned.getTranslationKey()) // замените на ваш ключ
+                    .color(TextColor.color(5636095))
+                    .decoration(TextDecoration.ITALIC,false);
+        } else {
+            displayName = displayName
+                    .color(TextColor.color(5636095))
+                    .decoration(TextDecoration.ITALIC,false);
+        }
+
+        ItemMeta meta1 = cloned.getItemMeta();
+        meta1.displayName(displayName);
+        cloned.setItemMeta(meta1);
+    }
+    public static void reEnchantCustom(ItemStack stack, Enchantment enchantment, int level){
+        Debugger.chat("Reenchanting item" + stack,3);
+        ItemMeta meta = stack.getItemMeta();
+        meta.removeEnchant(enchantment);
+        meta.addEnchant(enchantment,level,true);
+        meta.setLore(meta.getLore().stream().filter(line -> (!line.contains(((IEnchant) enchantment).getDisplayName()))).collect(Collectors.toList())); //удаляем старый лор
+        setCustomLore(meta, enchantment, level);
+        stack.setItemMeta(meta);
+        setEnchantingColor(stack);
+    }
+//            ItemMeta meta = stack.getItemMeta();
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//            ItemMeta meta = stack.getItemMeta();
+//            if (!(enchantment instanceof IEnchant)) {
+//                    meta.addEnchant(enchantment, enchats.get(enchantment), true);
+//
+//            }
+//
+//            if (meta.getEnchants().containsKey(enchantment)) {
+//                if (stack.getEnchantLevel(enchantment) < enchats.get(enchantment)) {
+//                    meta.removeEnchant(enchantment);
+//                    meta.setLore(meta.getLore().stream().filter(line -> (!line.startsWith(((IEnchant) enchantment).getDisplayName()))).collect(Collectors.toList())); //удаляем старый лор
+//                    setCustomLore(meta, enchantment, enchats.get(enchantment));
+//                    return stack;
+//                }
+//                return stack;
+//            } else {
+////        if (!getTarget(stack).equals(enchant.getItemTarget()))
+////            return stack;
+//                setCustomLore(meta, enchantment, enchats.get(enchantment));
+//                meta.addEnchant(enchantment, enchats.get(enchantment), true);
+//                stack.setItemMeta(meta);
+//                return stack;
+//            }
+//        }
+//return stack; //todo написал не думая
+//    }
+
 
     private static void setCustomLore(ItemMeta meta, Enchantment enchant, int lvl) {
         List<String> lore = meta.getLore();
@@ -71,6 +172,20 @@ public class Enchants implements Reloadable {
             newLore.addAll(lore);
         }
         meta.setLore(newLore);
+    }
+    public static ItemStack doEnchantBook(ItemStack stack,Map<Enchantment, Integer> enchants) {
+            stack.setType(Material.ENCHANTED_BOOK);
+            EnchantmentStorageMeta meta = (EnchantmentStorageMeta)stack.getItemMeta();
+        for (Enchantment enchantment : enchants.keySet()) {
+            if (enchantment instanceof IEnchant) {
+                setCustomLore(meta, enchantment, enchants.get(enchantment));
+            }
+            meta.addEnchant(enchantment, enchants.get(enchantment), true);
+        }
+
+            stack.setItemMeta(meta);
+            return stack;
+
     }
 
     public static EnchantmentTarget getTarget(ItemStack stack) {
@@ -148,10 +263,10 @@ public class Enchants implements Reloadable {
         try {
             for (int i = 1; i < 10; i++) {
                 String value = PlaceholderAPI.setPlaceholders(null, Utils.translateHex(file.getString("global.levels." + i)));
-                levelDisplay.put(1, value);
+                levelDisplay.put(i, value);
             }
         }catch (NullPointerException e){
-            Bukkit.getLogger().info(ChatColor.RED + "Ошибка в настройках уровня. Уровней должно быть минимум 10");
+            //Bukkit.getLogger().info(ChatColor.RED + "Ошибка в настройках уровня. Уровней должно быть минимум 10");
         }
 
 
@@ -159,6 +274,6 @@ public class Enchants implements Reloadable {
 
     @Override
     public void reload() {
-
+        deserealize();
     }
 }

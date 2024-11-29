@@ -2,6 +2,7 @@ package org.mrdarkimc.enchantsplus.enchants;
 
 import io.papermc.paper.enchantments.EnchantmentRarity;
 import net.kyori.adventure.text.Component;
+import net.md_5.bungee.api.chat.TranslatableComponent;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
@@ -44,7 +45,7 @@ public class EnchantmentWrapper extends Enchantment {
     @NotNull
     @Override
     public String getName() {
-        return "BaseEnchantAnd"+ key;
+        return key;
     }
 
     @Override
@@ -80,14 +81,13 @@ public class EnchantmentWrapper extends Enchantment {
 
     @Override
     public boolean canEnchantItem(@NotNull ItemStack itemStack) {
-
         return !itemStack.hasEnchant(this) && Enchants.getTarget(itemStack).equals(this.getItemTarget());
     }
 
     @NotNull
     @Override
     public Component displayName(int i) {
-        return Component.text("BaseEnchant");
+        return Component.translatable("enchantment.minecraft.bane_of_arthropods2");
     }
 
     @Override

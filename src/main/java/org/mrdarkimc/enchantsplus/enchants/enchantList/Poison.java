@@ -12,19 +12,85 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
+import org.mrdarkimc.SatanicLib.Debugger;
 import org.mrdarkimc.SatanicLib.Utils;
 import org.mrdarkimc.enchantsplus.EnchantsPlus;
 import org.mrdarkimc.enchantsplus.enchants.EnchantmentWrapper;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
+import org.mrdarkimc.enchantsplus.enchants.interfaces.Infoable;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Reloadable;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.TriggerChance;
 
 import java.util.*;
 
-public class Poison extends EnchantmentWrapper implements IEnchant, TriggerChance, Reloadable {
-    private String displayname = ChatColor.GRAY + "Ядовитый клинок "; //todo fix hardcode
+public class Poison extends EnchantmentWrapper implements IEnchant, TriggerChance, Reloadable, Infoable {
 
-    public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(),"encantmentsplus_poison");
+    public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(), "encantmentsplus_poison");
+    private String displayname = ChatColor.GRAY + "Ядовитый клинок "; //todo fix hardcode
+    private static double chance = 0.3; //todo hardcode
+    private static double triggerChance = 0.3; //todo hardcode
+    public static double multiplier = 1;
+    public static int poisonTime = 200;
+    public static Map<Player, Integer> poisonedPlayers = new HashMap<>();
+
+    public Poison() {
+        super(key);
+        deserealizeDefaults("poison");
+        deserealizeExtra("poison");
+        Reloadable.register(this);
+    }
+
+    public double getEnchantChance() {
+        return chance;
+    }
+
+    public double getTriggerChance() {
+        return triggerChance;
+    }
+
+    public static double increaseDamage(Player player, double damage) {
+        int level = poisonedPlayers.get(player);
+        return (damage * level) * multiplier; //((damage+0.5) * (double)level)
+    }
+
+    public void deserealizeDefaults(String enchant) {
+        this.displayname = PlaceholderAPI.setPlaceholders(null, Utils.translateHex(EnchantsPlus.config.get().getString("enchants." + enchant + ".displayname")));
+        chance = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".ItemEnchantChance");
+    }
+
+    public void deserealizeExtra(String enchant) {
+        this.displayname = PlaceholderAPI.setPlaceholders(null, Utils.translateHex(EnchantsPlus.config.get().getString("enchants." + enchant + ".displayname")));
+        triggerChance = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".triggerChance");
+        multiplier = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".damageModifier");
+        chance = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".ItemEnchantChance");
+    }
+
+    @Override
+    public void accept(Event event) {
+        if (event instanceof EntityDamageByEntityEvent e) {
+            if (e.getEntity() instanceof Player victim) {
+                if (!poisonedPlayers.containsKey(victim)) {
+                    Debugger.chat("Poison chance: " + triggerChance, 2);
+                    double rand = ((double) Math.round((Math.random() * 100)) / 100);
+                    if (rand <= triggerChance) {
+                        poisonPlayer(victim, ((Player) e.getDamager()).getInventory().getItemInMainHand().getEnchantLevel(this));
+                    }
+                }
+            }
+        }
+    }
+
+    public void poisonPlayer(Player player, int levelOfEnchantment) {
+        poisonedPlayers.put(player, levelOfEnchantment);
+        player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, Poison.poisonTime, 1, true));
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                poisonedPlayers.remove(player);
+            }
+        }.runTaskLaterAsynchronously(EnchantsPlus.getInstance(), Poison.poisonTime);
+    }
+
     @Override
     public String getDisplayName() {
         return displayname;
@@ -32,68 +98,7 @@ public class Poison extends EnchantmentWrapper implements IEnchant, TriggerChanc
 
     @Override
     public List<String> getCustomLore() {
-        return List.of("arr1","arr3");
-    }
-
-    public Poison() {
-        super(key);
-        deserealizeDefaults("poison");
-        Reloadable.register(this);
-    }
-    private static double chance = 0.3; //todo hardcode
-    private static double triggerChance = 0.3; //todo hardcode
-    private static double multiplier = 1;
-    public static int poisonTime = 200;
-    public double getEnchantChance(){
-        return chance;
-    }
-    public double getTriggerChance(){
-        return triggerChance;
-    }
-    public static double increaseDamage(Player player, double damage){
-    int level = poisonedPlayers.get(player);
-    return (damage*level) * multiplier; //((damage+0.5) * (double)level)
-    }
-    public void deserealizeDefaults(String enchant){
-        //Utils.translateHex(EnchantsPlus.config.get().getString("enchants.autosmelt.displayname"));
-        this.displayname = PlaceholderAPI.setPlaceholders(null, Utils.translateHex(EnchantsPlus.config.get().getString("enchants."+ enchant + ".displayname")));
-        chance = EnchantsPlus.config.get().getDouble("enchants."+ enchant + ".ItemEnchantChance");
-    }
-    public void deserealizeExtra(String enchant){
-        //Utils.translateHex(EnchantsPlus.config.get().getString("enchants.autosmelt.displayname"));
-        this.displayname = PlaceholderAPI.setPlaceholders(null, Utils.translateHex(EnchantsPlus.config.get().getString("enchants."+ enchant + ".displayname")));
-        triggerChance = EnchantsPlus.config.get().getDouble("enchants."+ enchant + ".triggerChance");
-        multiplier = EnchantsPlus.config.get().getDouble("enchants."+ enchant + ".damageModifier");
-        chance = EnchantsPlus.config.get().getDouble("enchants."+ enchant + ".ItemEnchantChance");
-    }
-
-    public static Map<Player, Integer> poisonedPlayers = new HashMap<>();
-
-    @Override
-    public void accept(Event event) {
-        if (event instanceof EntityDamageByEntityEvent e) {
-            if (e.getEntity() instanceof Player victim) {
-                if (!poisonedPlayers.containsKey(victim)){
-                    if (Math.random() > triggerChance) {
-                        poisonPlayer(victim, ((Player) e.getDamager()).getInventory().getItemInMainHand().getEnchantLevel(this));
-                    }
-
-                }
-
-            }
-        }
-    }
-
-    public void poisonPlayer(Player player, int levelOfEnchantment){
-        poisonedPlayers.put(player, levelOfEnchantment);
-        player.addPotionEffect(new PotionEffect(PotionEffectType.POISON,200,1,true)); //todo hardcode
-        new BukkitRunnable(){
-
-            @Override
-            public void run() {
-            poisonedPlayers.remove(player);
-            }
-        }.runTaskLaterAsynchronously(EnchantsPlus.getInstance(),200); //todo hardcode
+        return List.of("arr1", "arr3");
     }
 
     @Override
@@ -112,10 +117,18 @@ public class Poison extends EnchantmentWrapper implements IEnchant, TriggerChanc
         return EnchantmentTarget.WEAPON;
     }
 
-
     @Override
     public void reload() {
         deserealizeDefaults("poison");
-        deserealizeExtra("posion");
+        deserealizeExtra("poison");
+    }
+
+    @Override
+    public void printInfo() {
+        Debugger.chat("[Poison] Cached displayname: " + displayname,1);
+        Debugger.chat("[Poison] Cached enchant chance: " + chance,1);
+        Debugger.chat("[Poison] Cached trigger chance: " + triggerChance,1);
+        Debugger.chat("[Poison] Cached multiplier: " + multiplier,1);
+        Debugger.chat("[Poison] Cached poisontime: " + poisonTime,1);
     }
 }
