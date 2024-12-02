@@ -7,19 +7,23 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 import org.mrdarkimc.enchantsplus.enchants.Enchants;
+import org.mrdarkimc.enchantsplus.enchants.enchantList.HealthBoost;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Infoable;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Reloadable;
 import org.mrdarkimc.enchantsplus.utils.Randomizer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,12 +41,18 @@ public class CommandEnchant implements CommandExecutor {
     }
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
-        if (commandSender instanceof Player){
-            Player player = (Player) commandSender;
+        Player player = null;
+        ConsoleCommandSender sender = null;
+        if (commandSender instanceof Player) {
+            player = (Player) commandSender;
+        }
+        if (commandSender instanceof ConsoleCommandSender) {
+            sender = (ConsoleCommandSender)commandSender;
+        }
             ItemStack stack = player.getInventory().getItemInMainHand();
             if (!player.hasPermission("Enchantsplus.admin"))
                 return true;
-            if (!(strings.length > 1)){
+            if (!(strings.length > 0)){
                 player.sendMessage(ChatColor.GRAY + "(Только админ-комманды)Список комманд:");
                 player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " <зачарование> <уровень> - дать себе книгу");
                 player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " all <уровень> - дать себе все книги на уровень");
@@ -50,6 +60,7 @@ public class CommandEnchant implements CommandExecutor {
                 player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " reload - перезагрузить кеш плагина");
                 player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " info - показать инфу о чарах");
                 player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " list - список зачарований");
+                player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " addAll - Добавить весь инвентарь в список разрешенных предметов");
                 return true;
             }
 
@@ -69,19 +80,42 @@ public class CommandEnchant implements CommandExecutor {
                     player.getInventory().addItem(getCustomBook(Enchants.MAGNET,1));
                     break;
                 case "vampire":
-                    if (strings.length > 2) {
+                    if (strings.length > 1) {
                         Enchants.applyCustomEnchant(stack, Map.of(Enchants.VAMPIRE, Integer.parseInt(strings[1])));
                         player.getInventory().addItem(getCustomBook(Enchants.VAMPIRE, Integer.parseInt(strings[1])));
                     }else player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " vampire <уровень>");
                     break;
                 case "poison":
-                    if (strings.length > 2) {
+                    if (strings.length > 1) {
                     Enchants.applyCustomEnchant(stack,Map.of(Enchants.POISON, Integer.parseInt(strings[1])));
                     player.getInventory().addItem(getCustomBook(Enchants.POISON,Integer.parseInt(strings[1])));
                     }else player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " poison <уровень>");
                     break;
+                case "health":
+                    if (strings.length > 1) {
+                        ((HealthBoost)Enchants.HEALTHBOOST).enchantStack(stack,Enchants.HEALTHBOOST,Integer.parseInt(strings[1]));
+                        player.getInventory().addItem(getCustomBook(Enchants.HEALTHBOOST,Integer.parseInt(strings[1])));
+                    }else player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " health <уровень>");
+                    break;
                 case "reload":
                     Reloadable.reloadAll();
+                    player.sendMessage(ChatColor.GREEN + "[StackableEnchants] конфиг перезагружен");
+                    break;
+                case "addAll":
+                    ItemStack[] stacks = player.getInventory().getContents();
+                    List<String> materials = EnchantsPlus.config.get().getStringList("enchants.dozer.allowedMaterials");
+                    for (ItemStack itemStack : stacks) {
+                        if (itemStack == null)
+                            continue;
+                        Material material = itemStack.getType();
+                        if (material.equals(Material.AIR))
+                            continue;
+                        if (materials.contains(material.toString()))
+                            continue;
+                        materials.add(material.toString());
+                    }
+                    EnchantsPlus.config.get().set("enchants.dozer.allowedMaterials",materials);
+                    EnchantsPlus.config.saveConfig();
                     break;
                 case "give":
                     if (strings.length > 3) {
@@ -89,23 +123,26 @@ public class CommandEnchant implements CommandExecutor {
                         if (giveTo !=null){
                             switch (strings[2]){
                                 case "dozer":
-                                    player.getInventory().addItem(getCustomBook(Enchants.DOZER,1));
+                                    giveTo.getInventory().addItem(getCustomBook(Enchants.DOZER,1));
                                     break;
                                 case "autosmelt":
-                                    player.getInventory().addItem(getCustomBook(Enchants.AUTOSMELT,1));
+                                    giveTo.getInventory().addItem(getCustomBook(Enchants.AUTOSMELT,1));
                                     break;
                                 case "magnet":
-                                    player.getInventory().addItem(getCustomBook(Enchants.MAGNET,1));
+                                    giveTo.getInventory().addItem(getCustomBook(Enchants.MAGNET,1));
                                     break;
                                 case "vampire":
-                                        player.getInventory().addItem(getCustomBook(Enchants.VAMPIRE, Integer.parseInt(strings[3])));
+                                        giveTo.getInventory().addItem(getCustomBook(Enchants.VAMPIRE, Integer.parseInt(strings[3])));
+                                    break;
+                                case "health":
+                                    giveTo.getInventory().addItem(getCustomBook(Enchants.HEALTHBOOST, Integer.parseInt(strings[3])));
                                     break;
                                 case "poison":
-                                        player.getInventory().addItem(getCustomBook(Enchants.POISON,Integer.parseInt(strings[3])));
+                                    giveTo.getInventory().addItem(getCustomBook(Enchants.POISON,Integer.parseInt(strings[3])));
                                     break;
                             }
                         }
-                    }else player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " give <игрок> <зачарование> <уровень>");
+                    }else commandSender.sendMessage(ChatColor.GRAY + "/" + command.getName() + " give <игрок> <зачарование> <уровень>");
                     break;
                 case "info":
                     Enchants.customEnchants.forEach(e -> {
@@ -123,9 +160,9 @@ public class CommandEnchant implements CommandExecutor {
                     player.getInventory().addItem(getCustomBook(Enchants.MAGNET,1));
                     player.getInventory().addItem(getCustomBook(Enchants.VAMPIRE,Integer.parseInt(strings[1])));
                     player.getInventory().addItem(getCustomBook(Enchants.POISON,Integer.parseInt(strings[1])));
+                    player.getInventory().addItem(getCustomBook(Enchants.HEALTHBOOST,Integer.parseInt(strings[1])));
                     break;
             }
-        }
         return true;
     }
 }

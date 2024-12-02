@@ -14,7 +14,6 @@ import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.mrdarkimc.SatanicLib.Debugger;
 import org.mrdarkimc.enchantsplus.enchants.Enchants;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
 
@@ -39,23 +38,63 @@ public class AnvilListener implements Listener {
 
         if (book == null || !book.getType().equals(Material.ENCHANTED_BOOK))
             return;
+        //
+        boolean hasBeenEnchanted = false;
+        boolean hasCustomEnchantInIt = false;
         ItemMeta meta = book.getItemMeta();
         EnchantmentStorageMeta storedEnc = (EnchantmentStorageMeta) meta;
         Map<Enchantment, Integer> enchantsMap = storedEnc.getStoredEnchants();
-        boolean hasBeenModified = false;
-        boolean hasCustomEnchants = false;
+        ////////////////////////////////////////////////////
         for (Enchantment enchantment : enchantsMap.keySet()) {
             if (enchantment instanceof IEnchant) {
-                hasCustomEnchants = true;
+                if (enchantment.canEnchantItem(cloned)){
+                    hasBeenEnchanted = ((IEnchant)enchantment).enchantStack(cloned, enchantment,enchantsMap.get(enchantment));
+                    hasCustomEnchantInIt = true;
+                }
+            }else {
+                if (enchantment.canEnchantItem(cloned)) {
+
+                    hasBeenEnchanted = doDefaultEnchant(cloned, enchantment, enchantsMap.get(enchantment));;
+                }
             }
         }
-        if (!hasCustomEnchants){
+        if (!hasCustomEnchantInIt)
             return;
-        }
-        if (Enchants.applyCustomEnchant(cloned,enchantsMap)!= null){
-            //cloned.getItemMeta().displayName(cloned.getItemMeta().displayName().color(TextColor.color(52221)));
-            hasBeenModified = true;
-        }
+        if (!hasBeenEnchanted)
+            return;
+        inv.setRepairCost(10);
+        // Debugger.chat("Enchant has been modified. Setting repair cost" ,4);
+        e.setResult(cloned);
+        anvils.add(e.getInventory());
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//        boolean hasBeenModified = false;
+//        boolean hasCustomEnchants = false;
+//        for (Enchantment enchantment : enchantsMap.keySet()) {
+//            if (enchantment instanceof IEnchant) {
+//                hasCustomEnchants = true;
+//            }
+//        }
+//        if (!hasCustomEnchants){
+//            return;
+//        }
+//        if (Enchants.applyCustomEnchant(cloned,enchantsMap)!= null){
+//            //cloned.getItemMeta().displayName(cloned.getItemMeta().displayName().color(TextColor.color(52221)));
+//            hasBeenModified = true;
+//        }
 
 
 
@@ -89,14 +128,25 @@ public class AnvilListener implements Listener {
 //        }
 //todo он триггерится 4 раща
         //Debugger.chat("final",4);
-        if (hasBeenModified) { //merge with  (hasCustomEnchants && Enchants.applyCustomEnchant(cloned,enchantsMap)!= null){
-            inv.setRepairCost(10);
-           // Debugger.chat("Enchant has been modified. Setting repair cost" ,4);
-            e.setResult(cloned);
-            anvils.add(e.getInventory());
+//        if (hasBeenModified) { //merge with  (hasCustomEnchants && Enchants.applyCustomEnchant(cloned,enchantsMap)!= null){
+//            inv.setRepairCost(10);
+//           // Debugger.chat("Enchant has been modified. Setting repair cost" ,4);
+//            e.setResult(cloned);
+//            anvils.add(e.getInventory());
+//
+//        }
 
-        }
-
+    }
+    public boolean doDefaultEnchant(ItemStack stack, Enchantment enchantment, int level){
+        if (!enchantment.canEnchantItem(stack))
+            return false;
+        ItemMeta meta = stack.getItemMeta();
+//        if (meta.getEnchants().containsKey(enchantment)){
+//
+//        }
+        meta.addEnchant(enchantment,level,true);
+        stack.setItemMeta(meta);
+        return true;
     }
     @EventHandler(priority = EventPriority.HIGH)
     public void onInteract(InventoryClickEvent e) {

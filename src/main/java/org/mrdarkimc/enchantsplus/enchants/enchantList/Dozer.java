@@ -20,6 +20,7 @@ import org.mrdarkimc.SatanicLib.Debugger;
 import org.mrdarkimc.SatanicLib.Utils;
 import org.mrdarkimc.enchantsplus.EnchantsPlus;
 import org.mrdarkimc.enchantsplus.enchants.EnchantmentWrapper;
+import org.mrdarkimc.enchantsplus.enchants.Enchants;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Infoable;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Reloadable;
@@ -32,10 +33,11 @@ public class Dozer extends EnchantmentWrapper implements IEnchant, Reloadable, I
     public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(), "encantmentsplus_dozer");
     private String displayname = ChatColor.GRAY + "Будьдозер "; //todo fix hardcode
     private static double chance = 0.3; //todo hardcode
+    private List<Material> allowedMaterials = new ArrayList<>();
 
     public Dozer() {
         super(key);
-        deserealizeDefaults("dozer");
+        deserealize("dozer");
         Reloadable.register(this);
     }
 
@@ -43,14 +45,35 @@ public class Dozer extends EnchantmentWrapper implements IEnchant, Reloadable, I
         return chance;
     }
 
-    public void deserealizeDefaults(String enchant) {
+    public void deserealize(String enchant) {
         this.displayname = PlaceholderAPI.setPlaceholders(null, Utils.translateHex(EnchantsPlus.config.get().getString("enchants." + enchant + ".displayname")));
         chance = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".ItemEnchantChance");
+        allowedMaterials = EnchantsPlus.config.get().getStringList("enchants." + enchant + ".allowedMaterials").stream().map(Material::valueOf).collect(Collectors.toList());
+    }
+    @Override
+    public boolean enchantStack(ItemStack stack, Enchantment enchantment, int level) {
+        if (!stack.getType().toString().contains("PICKAXE"))
+            return false;
+        ItemMeta meta = stack.getItemMeta();
+        if (meta.getEnchants().containsKey(enchantment)) {
+            if (meta.getEnchantLevel(enchantment) < level) {
+                Enchants.reEnchantCustom(stack,enchantment,level);
+                return true;
+            }else return false;
+        } else {
+            Enchants.setCustomLore(meta, enchantment, level);
+            meta.addEnchant(enchantment, level, true);
+            stack.setItemMeta(meta);
+            Enchants.setEnchantingColor(stack);
+            return true;
+        }
     }
 
     @Override
     public void accept(Event event) {
         if (event instanceof BlockBreakEvent e) {
+            if (!allowedMaterials.contains(e.getBlock().getBlockData().getMaterial()))
+                return;
             Player player = e.getPlayer();
             ItemStack stack = player.getInventory().getItemInMainHand();
             ItemMeta meta = stack.getItemMeta();
@@ -68,8 +91,12 @@ public class Dozer extends EnchantmentWrapper implements IEnchant, Reloadable, I
             Block targetBlock = (Block) lastTwoTargetBlocks.get(1);
             Block adjacentBlock = (Block) lastTwoTargetBlocks.get(0);
             BlockFace face = targetBlock.getFace(adjacentBlock);
-            this.breakBlocks(filterBlocks(this.getBlocks(e.getBlock(), face.toString())), player);
+            this.breakBlocks(this.getBlocks(e.getBlock(), face.toString()), player);
         }
+    }
+    @Override
+    public boolean canEnchantItem(@NotNull ItemStack itemStack) {
+        return itemStack.getType().toString().contains("PICKAXE"); //!itemStack.hasEnchant(this) &&
     }
 
     private void breakBlocks(List<Block> blocks, Player player) {
@@ -79,7 +106,12 @@ public class Dozer extends EnchantmentWrapper implements IEnchant, Reloadable, I
 
         while (var2.hasNext()) {
             Block b = (Block) var2.next();
-            b.breakNaturally(heldItem);
+            Debugger.chat("Material: " + b.getBlockData().getMaterial(),4);
+            if (allowedMaterials.contains(b.getBlockData().getMaterial())) {
+                b.breakNaturally();
+                //вот тут нужно ломать блок только если он быстро ломается киркой
+                //например если b = камень, то ломаем. Если например b = дуб или другой блок который быстро не ломается киркой, то не ломаем блок
+            }
         }
 
         Collection<Entity> entities = Bukkit.getServer().getWorld(player.getWorld().getUID()).getNearbyEntities(first.getLocation(), 3, 3, 3);
@@ -88,9 +120,6 @@ public class Dozer extends EnchantmentWrapper implements IEnchant, Reloadable, I
         Bukkit.getPluginManager().callEvent(new BlockDropItemEvent(first, first.getState(), player, itemList));
     }
 
-    public List<Block> filterBlocks(List<Block> blocks) {
-        return blocks;
-    }
 
     private List<Block> getBlocks(Block block, String face) {
         List<Block> blocks = new ArrayList();
@@ -163,7 +192,7 @@ public class Dozer extends EnchantmentWrapper implements IEnchant, Reloadable, I
 
     @Override
     public void reload() {
-        deserealizeDefaults("dozer");
+        deserealize("dozer");
     }
 
     @Override

@@ -10,11 +10,13 @@ import org.bukkit.entity.Item;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.mrdarkimc.SatanicLib.Debugger;
 import org.mrdarkimc.SatanicLib.Utils;
 import org.mrdarkimc.enchantsplus.EnchantsPlus;
 import org.mrdarkimc.enchantsplus.enchants.EnchantmentWrapper;
+import org.mrdarkimc.enchantsplus.enchants.Enchants;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Infoable;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Reloadable;
@@ -47,6 +49,28 @@ public class AutoSmelt extends EnchantmentWrapper implements IEnchant, Reloadabl
     @Override
     public List<String> getCustomLore() {
         return List.of("arr1", "arr3");
+    }
+
+    @Override
+    public boolean enchantStack(ItemStack stack, Enchantment enchantment, int level) {
+        ItemMeta meta = stack.getItemMeta();
+        if (meta.getEnchants().containsKey(enchantment)) {
+            if (meta.getEnchantLevel(enchantment) < level) {
+                Enchants.reEnchantCustom(stack,enchantment,level);
+                return true;
+            }else return false;
+        } else {
+            Enchants.setCustomLore(meta, enchantment, level);
+            meta.addEnchant(enchantment, level, true);
+            stack.setItemMeta(meta);
+            Enchants.setEnchantingColor(stack);
+            return true;
+        }
+    }
+    @Override
+    public boolean canEnchantItem(@NotNull ItemStack itemStack) {
+        String name = itemStack.getType().toString();
+        return name.contains("PICKAXE"); //!itemStack.hasEnchant(this) &&
     }
 
     @Override

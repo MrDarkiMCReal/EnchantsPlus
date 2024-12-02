@@ -1,9 +1,15 @@
-name: EnchantsPlus
+name: StackableEnchants
 version: '1.0'
 main: org.mrdarkimc.enchantsplus.EnchantsPlus
 api-version: '1.16'
 softdepend:
   - PlaceholderAPI
 commands:
-  try:
-    description: get
+  senc:
+    description: "Кастомные зачарования"
+    aliases:
+      - ep
+      - se
+      - stackableenchants
+      - stacke
+      - eplus

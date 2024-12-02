@@ -66,6 +66,7 @@ public class ItemEnchantListener implements Listener, Reloadable {
         //Bukkit.getLogger().info("Filtering enchants for target: " + target);
         List<IEnchant> filteredEnchants = Enchants.getEnchants().stream()
                 .filter(enchant -> enchant.getEnchantment().getItemTarget().equals(target))
+                .filter(enchant -> enchant.getEnchantment().canEnchantItem(stack))
                 .collect(Collectors.toList());
         //Bukkit.getLogger().info("Filtered enchants: " + filteredEnchants.size());
         for (IEnchant filteredEnchant : filteredEnchants) {

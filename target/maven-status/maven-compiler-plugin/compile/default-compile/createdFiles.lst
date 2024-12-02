@@ -14,16 +14,11 @@ org\mrdarkimc\enchantsplus\enchants\interfaces\Infoable.class
 org\mrdarkimc\enchantsplus\enchants\enchantList\Poison$1.class
 org\mrdarkimc\enchantsplus\EnchantsPlus.class
 org\mrdarkimc\enchantsplus\enchants\interfaces\TriggerChance.class
-org\mrdarkimc\enchantsplus\SaveCommand.class
-org\mrdarkimc\enchantsplus\anvilHandler\AnvilRecipeListener.class
 org\mrdarkimc\enchantsplus\enchants\enchantList\MagicBlock.class
 org\mrdarkimc\enchantsplus\listeners\ItemEnchantListener.class
 org\mrdarkimc\enchantsplus\enchants\enchantList\AutoSmelt$1.class
-org\mrdarkimc\enchantsplus\anvilHandler\AnvilRecipe.class
 org\mrdarkimc\enchantsplus\enchants\enchantList\Vampire.class
-org\mrdarkimc\enchantsplus\anvilHandler\AnvilRecipes.class
 org\mrdarkimc\enchantsplus\enchants\interfaces\IAnvilable.class
-org\mrdarkimc\enchantsplus\anvilHandler\AnvilRecipeListener$1.class
 org\mrdarkimc\enchantsplus\CommandEnchant.class
 org\mrdarkimc\enchantsplus\enchants\Enchants$1.class
 org\mrdarkimc\enchantsplus\enchants\interfaces\Reloadable.class

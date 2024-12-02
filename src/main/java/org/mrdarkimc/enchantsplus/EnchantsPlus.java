@@ -3,6 +3,7 @@ package org.mrdarkimc.enchantsplus;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.mrdarkimc.SatanicLib.Debugger;
 import org.mrdarkimc.SatanicLib.SatanicLib;
+import org.mrdarkimc.SatanicLib.Utils;
 import org.mrdarkimc.SatanicLib.configsetups.Configs;
 import org.mrdarkimc.enchantsplus.enchants.Enchants;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
@@ -32,8 +33,10 @@ public final class EnchantsPlus extends JavaPlugin implements Reloadable {
         getServer().getPluginManager().registerEvents(new EnchantsLogic(),this);
         getServer().getPluginManager().registerEvents(new AnvilListener(),this);
         getServer().getPluginManager().registerEvents(new ItemEnchantListener(),this);
-        getServer().getPluginCommand("try").setExecutor(new CommandEnchant());
+        getServer().getPluginCommand("EP").setExecutor(new CommandEnchant());
         new Debugger();
+        Reloadable.register(this);
+        Utils.startUp("StackableEnchants");
         //new AnvilRecipeListener(instance);
         //new AnvilRecipes();
 
@@ -70,6 +73,7 @@ public final class EnchantsPlus extends JavaPlugin implements Reloadable {
 
     @Override
     public void reload() {
+        config.loadConfig();
         config.reloadConfig();
     }
 }

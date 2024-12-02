@@ -17,17 +17,19 @@ public class Randomizer {
         for (T obj : objects) {
             totalChance += obj.getEnchantChance();
         }
+        totalChance = (double) (Math.round(totalChance * 100)) /100;
         Debugger.chat("Summ of chances: " + totalChance,7);
 
-        Random random = new Random();
-        double randomValue = random.nextDouble() * totalChance;
-        Debugger.chat("Random Number: " + randomValue,7);
+        //Random random = new Random();
+        double rand = ((double) Math.round((Math.random() * 100)) /100);
+        //double randomValue = random.nextDouble() * totalChance;
+        Debugger.chat("Random Number: " + rand,7);
         double cumulativeChance = 0.0;
         for (T obj : objects) {
             double chance = obj.getEnchantChance();
             Debugger.chat("Object: " + obj + " And chance: " + chance,7);
             cumulativeChance += chance;
-            if (randomValue < cumulativeChance) {
+            if (rand <= cumulativeChance) {
                 Debugger.chat("Choosing: " + obj.toString(),7);
                 return obj;
             }

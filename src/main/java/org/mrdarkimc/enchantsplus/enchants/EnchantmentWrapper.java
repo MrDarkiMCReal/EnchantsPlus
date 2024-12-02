@@ -81,7 +81,7 @@ public class EnchantmentWrapper extends Enchantment {
 
     @Override
     public boolean canEnchantItem(@NotNull ItemStack itemStack) {
-        return !itemStack.hasEnchant(this) && Enchants.getTarget(itemStack).equals(this.getItemTarget());
+        return Enchants.getTarget(itemStack).equals(this.getItemTarget()); //!itemStack.hasEnchant(this) &&
     }
 
     @NotNull

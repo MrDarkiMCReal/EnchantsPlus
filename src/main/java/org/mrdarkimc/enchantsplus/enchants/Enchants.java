@@ -36,6 +36,7 @@ public class Enchants implements Reloadable {
         registerNewEnchantments(MAGNET);
         registerNewEnchantments(VAMPIRE);
         registerNewEnchantments(POISON);
+        registerNewEnchantments(HEALTHBOOST);
         //
     }
 
@@ -50,6 +51,7 @@ public class Enchants implements Reloadable {
     public static final Enchantment MAGNET = new Magnet();
     public static final Enchantment VAMPIRE = new Vampire();
     public static final Enchantment POISON = new Poison();
+    public static final Enchantment HEALTHBOOST = new HealthBoost();
 
     public static ItemStack applyCustomEnchant(ItemStack stack, Map<Enchantment, Integer> enchats) {
         if (stack.getType().equals(Material.BOOK)) {
@@ -164,7 +166,7 @@ public class Enchants implements Reloadable {
 //    }
 
 
-    private static void setCustomLore(ItemMeta meta, Enchantment enchant, int lvl) {
+    public static void setCustomLore(ItemMeta meta, Enchantment enchant, int lvl) {
         List<String> lore = meta.getLore();
         List<String> newLore = new ArrayList<>();
         newLore.add(((IEnchant) enchant).getDisplayName() + Enchants.getDisplayLevel(lvl));
