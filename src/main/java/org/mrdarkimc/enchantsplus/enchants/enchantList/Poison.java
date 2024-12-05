@@ -2,6 +2,7 @@ package org.mrdarkimc.enchantsplus.enchants.enchantList;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
@@ -9,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -25,6 +27,7 @@ import org.mrdarkimc.enchantsplus.enchants.interfaces.Reloadable;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.TriggerChance;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Poison extends EnchantmentWrapper implements IEnchant, TriggerChance, Reloadable, Infoable {
 
@@ -60,6 +63,13 @@ public class Poison extends EnchantmentWrapper implements IEnchant, TriggerChanc
     }
     @Override
     public boolean canEnchantItem(@NotNull ItemStack itemStack) {
+        if (itemStack.getType().equals(Material.ENCHANTED_BOOK)){
+            EnchantmentStorageMeta meta = (EnchantmentStorageMeta) itemStack.getItemMeta();
+            meta.getStoredEnchants().forEach((k,v) -> k.getItemTarget().equals(this.getItemTarget()));
+            Set<Enchantment> encs = meta.getStoredEnchants().keySet();
+            Set<EnchantmentTarget> targets = encs.stream().map(Enchantment::getItemTarget).collect(Collectors.toSet());
+            return targets.contains(EnchantmentTarget.WEAPON) || targets.contains(EnchantmentTarget.TRIDENT);
+        }
         String name = itemStack.getType().toString();
         return name.contains("SWORD") | name.contains("TRIDENT") | name.contains("_AXE") ; //!itemStack.hasEnchant(this) &&
     }

@@ -3,26 +3,32 @@ package org.mrdarkimc.enchantsplus.enchants.enchantList;
 import com.google.common.collect.Multimap;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.mrdarkimc.SatanicLib.Debugger;
 import org.mrdarkimc.SatanicLib.Utils;
 import org.mrdarkimc.enchantsplus.EnchantsPlus;
 import org.mrdarkimc.enchantsplus.enchants.EnchantmentWrapper;
 import org.mrdarkimc.enchantsplus.enchants.Enchants;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
+import org.mrdarkimc.enchantsplus.enchants.interfaces.Infoable;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Reloadable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-public class HealthBoost extends EnchantmentWrapper implements IEnchant, Reloadable {
+public class HealthBoost extends EnchantmentWrapper implements IEnchant, Reloadable, Infoable {
     public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(), "encantmentsplus_healthboost");
     private String displayname = ChatColor.GRAY + "Бонус жизни "; //todo fix hardcode
     private static double chance = 0.3; //todo hardcode
@@ -33,6 +39,13 @@ public class HealthBoost extends EnchantmentWrapper implements IEnchant, Reloada
     }
     @Override
     public boolean canEnchantItem(@NotNull ItemStack itemStack) {
+        if (itemStack.getType().equals(Material.ENCHANTED_BOOK)){
+            EnchantmentStorageMeta meta = (EnchantmentStorageMeta) itemStack.getItemMeta();
+            meta.getStoredEnchants().forEach((k,v) -> k.getItemTarget().equals(this.getItemTarget()));
+            Set<Enchantment> encs = meta.getStoredEnchants().keySet();
+            Set<EnchantmentTarget> targets = encs.stream().map(Enchantment::getItemTarget).collect(Collectors.toSet());
+            return targets.contains(EnchantmentTarget.ARMOR) ||  targets.contains(EnchantmentTarget.WEARABLE) ||targets.contains(EnchantmentTarget.ARMOR_HEAD)|| targets.contains(EnchantmentTarget.ARMOR_TORSO)|| targets.contains(EnchantmentTarget.ARMOR_LEGS) || targets.contains(EnchantmentTarget.ARMOR_FEET);
+        }
         String name = itemStack.getType().toString();
         return name.contains("_HELMET") | name.contains("_CHESTPLATE") | name.contains("_LEGGINGS") | name.contains("_BOOTS") ; //!itemStack.hasEnchant(this) &&
     }
@@ -100,30 +113,30 @@ public void deserealize(){
     public double getEnchantChance() {
         return chance;
     }
-    public void HealthBoostItem(ItemStack stack, int level) {
-        if (stack == null || !stack.hasItemMeta()) {
-            return;
-        }
-
-        ItemMeta meta = stack.getItemMeta();
-        if (meta == null) {
-            return;
-        }
-
-
-        if (meta.getAttributeModifiers() != null) {
-            AttributeModifier healthBoost = new AttributeModifier(
-                    "Health Boost",
-                    level * 2.0,
-                    AttributeModifier.Operation.ADD_NUMBER
-            );
-
-
-            meta.addAttributeModifier(Attribute.GENERIC_MAX_HEALTH, healthBoost);
-        }
-
-        stack.setItemMeta(meta);
-    }
+//    public void HealthBoostItem(ItemStack stack, int level) {
+//        if (stack == null || !stack.hasItemMeta()) {
+//            return;
+//        }
+//
+//        ItemMeta meta = stack.getItemMeta();
+//        if (meta == null) {
+//            return;
+//        }
+//
+//
+//        if (meta.getAttributeModifiers() != null) {
+//            AttributeModifier healthBoost = new AttributeModifier(
+//                    "Health Boost",
+//                    level * 2.0,
+//                    AttributeModifier.Operation.ADD_NUMBER
+//            );
+//
+//
+//            meta.addAttributeModifier(Attribute.GENERIC_MAX_HEALTH, healthBoost);
+//        }
+//
+//        stack.setItemMeta(meta);
+//    }
 
     @Override
     public void accept(Event event) {
@@ -142,5 +155,11 @@ public void deserealize(){
     @Override
     public List<String> getCustomLore() {
         return List.of("1","2");
+    }
+
+    @Override
+    public void printInfo() {
+        Debugger.chat("[Health] Cached displayname: " + displayname,1);
+        Debugger.chat("[Health] Cached enchant chance: " + chance,1);
     }
 }

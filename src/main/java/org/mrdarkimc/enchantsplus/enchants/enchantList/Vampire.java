@@ -1,6 +1,7 @@
 package org.mrdarkimc.enchantsplus.enchants.enchantList;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
@@ -10,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.mrdarkimc.SatanicLib.Debugger;
@@ -22,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChance, Reloadable, Infoable {
 
@@ -54,6 +57,13 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
     }
     @Override
     public boolean canEnchantItem(@NotNull ItemStack itemStack) {
+        if (itemStack.getType().equals(Material.ENCHANTED_BOOK)){
+            EnchantmentStorageMeta meta = (EnchantmentStorageMeta) itemStack.getItemMeta();
+            meta.getStoredEnchants().forEach((k,v) -> k.getItemTarget().equals(this.getItemTarget()));
+            Set<Enchantment> encs = meta.getStoredEnchants().keySet();
+            Set<EnchantmentTarget> targets = encs.stream().map(Enchantment::getItemTarget).collect(Collectors.toSet());
+            return targets.contains(EnchantmentTarget.WEAPON) || targets.contains(EnchantmentTarget.TRIDENT);
+        }
         String name = itemStack.getType().toString();
         return name.contains("SWORD") | name.contains("TRIDENT") | name.contains("_AXE") ; //!itemStack.hasEnchant(this) &&
     }

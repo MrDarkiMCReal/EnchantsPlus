@@ -2,11 +2,8 @@ package org.mrdarkimc.enchantsplus.enchants;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -115,8 +112,10 @@ public class Enchants implements Reloadable {
         cloned.setItemMeta(meta1);
     }
     public static void reEnchantCustom(ItemStack stack, Enchantment enchantment, int level){
+        //todo if lvl == equals = +1 к лвл
         Debugger.chat("Reenchanting item" + stack,3);
         ItemMeta meta = stack.getItemMeta();
+        level = meta.getEnchantLevel(enchantment) == level ? level+1 : level; //todo for removal if error
         meta.removeEnchant(enchantment);
         meta.addEnchant(enchantment,level,true);
         meta.setLore(meta.getLore().stream().filter(line -> (!line.contains(((IEnchant) enchantment).getDisplayName()))).collect(Collectors.toList())); //удаляем старый лор

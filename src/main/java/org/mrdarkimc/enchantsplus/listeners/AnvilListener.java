@@ -14,21 +14,23 @@ import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.mrdarkimc.enchantsplus.enchants.Enchants;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
+import org.mrdarkimc.enchantsplus.handlers.Enchantable;
+import org.mrdarkimc.enchantsplus.handlers.Handler;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class AnvilListener implements Listener {
     private Set<AnvilInventory> anvils = new HashSet<>();
     @EventHandler
     void onAnvil(PrepareAnvilEvent event) {
-        handleAnvil(event);
+        handleAnvil3(event);
     }
-    public void handleAnvil(PrepareAnvilEvent e){
+    public void handleAnvil(PrepareAnvilEvent e) {
         //Debugger.chat("Triggering local PrepareAnvilEvent",4);
         AnvilInventory inv = e.getInventory();
         if (inv.getItem(0) == null || inv.getItem(1) == null)
@@ -39,6 +41,10 @@ public class AnvilListener implements Listener {
         if (book == null || !book.getType().equals(Material.ENCHANTED_BOOK))
             return;
         //
+//        if (cloned.getType().equals(Material.ENCHANTED_BOOK)) {
+//            //mergeBooks(cloned,book,e);
+//        return;
+//        }
         boolean hasBeenEnchanted = false;
         boolean hasCustomEnchantInIt = false;
         ItemMeta meta = book.getItemMeta();
@@ -47,14 +53,15 @@ public class AnvilListener implements Listener {
         ////////////////////////////////////////////////////
         for (Enchantment enchantment : enchantsMap.keySet()) {
             if (enchantment instanceof IEnchant) {
-                if (enchantment.canEnchantItem(cloned)){
-                    hasBeenEnchanted = ((IEnchant)enchantment).enchantStack(cloned, enchantment,enchantsMap.get(enchantment));
+                if (enchantment.canEnchantItem(cloned)) {
+                    hasBeenEnchanted = ((IEnchant) enchantment).enchantStack(cloned, enchantment, enchantsMap.get(enchantment));
                     hasCustomEnchantInIt = true;
                 }
-            }else {
+            } else {
                 if (enchantment.canEnchantItem(cloned)) {
 
-                    hasBeenEnchanted = doDefaultEnchant(cloned, enchantment, enchantsMap.get(enchantment));;
+                    hasBeenEnchanted = doDefaultEnchant(cloned, enchantment, enchantsMap.get(enchantment));
+
                 }
             }
         }
@@ -66,7 +73,93 @@ public class AnvilListener implements Listener {
         // Debugger.chat("Enchant has been modified. Setting repair cost" ,4);
         e.setResult(cloned);
         anvils.add(e.getInventory());
+    }
+    public void handleAnvil3(PrepareAnvilEvent e) {
+        //Debugger.chat("Triggering local PrepareAnvilEvent",4);
+        AnvilInventory inv = e.getInventory();
+        if (inv.getItem(0) == null || inv.getItem(1) == null)
+            return;
+        ItemStack cloned = inv.getFirstItem().clone();
+        ItemStack book = inv.getSecondItem();
 
+        if (book == null || !book.getType().equals(Material.ENCHANTED_BOOK))
+            return;
+        Enchantable clonedEnc = Handler.newinstance(cloned);
+        Enchantable bookEnc = Handler.newinstance(book);
+        if (clonedEnc.mergeWith(bookEnc)){
+            inv.setRepairCost(calculateRepairCost());
+            // Debugger.chat("Enchant has been modified. Setting repair cost" ,4);
+            e.setResult(cloned);
+            anvils.add(e.getInventory());
+            return;
+        }
+        return;
+        //
+//        if (cloned.getType().equals(Material.ENCHANTED_BOOK)) {
+//            //mergeBooks(cloned,book,e);
+//        return;
+//        }
+        //todo start
+//        boolean hasBeenEnchanted = false;
+//        boolean hasCustomEnchantInIt = false;
+//        ItemMeta meta = book.getItemMeta();
+//        EnchantmentStorageMeta storedEnc = (EnchantmentStorageMeta) meta;
+//        Map<Enchantment, Integer> enchantsMap = storedEnc.getStoredEnchants();
+//        ////////////////////////////////////////////////////
+//        for (Enchantment enchantment : enchantsMap.keySet()) {
+//            if (enchantment instanceof IEnchant) {
+//                if (enchantment.canEnchantItem(cloned)) {
+//                    hasBeenEnchanted = ((IEnchant) enchantment).enchantStack(cloned, enchantment, enchantsMap.get(enchantment));
+//                    hasCustomEnchantInIt = true;
+//                }
+//            } else {
+//                if (enchantment.canEnchantItem(cloned)) {
+//
+//                    hasBeenEnchanted = doDefaultEnchant(cloned, enchantment, enchantsMap.get(enchantment));
+//
+//                }
+//            }
+//        }
+//        if (!hasCustomEnchantInIt)
+//            return;
+//        if (!hasBeenEnchanted)
+//            return;
+//        inv.setRepairCost(10);
+//        // Debugger.chat("Enchant has been modified. Setting repair cost" ,4);
+//        e.setResult(cloned);
+//        anvils.add(e.getInventory());
+        //todo end
+    }
+    public int calculateRepairCost(){
+        return 10;
+    }
+//    public void mergeBooks(ItemStack firstBook, ItemStack secondBook, PrepareAnvilEvent e){
+//        boolean hasCustomEnchants = false;
+//        EnchantmentStorageMeta firstMeta = (EnchantmentStorageMeta) firstBook.getItemMeta(); //this one is cloned
+//        EnchantmentStorageMeta secondMeta = (EnchantmentStorageMeta) secondBook.getItemMeta();
+//        for (Map.Entry<Enchantment, Integer> enchantmentIntegerEntry : firstMeta.getStoredEnchants().entrySet()) {
+//            if (enchantmentIntegerEntry.getKey() instanceof IEnchant){
+//                hasCustomEnchants = true;
+//                break;
+//            }
+//        }
+//        for (Map.Entry<Enchantment, Integer> enchantmentIntegerEntry : secondMeta.getStoredEnchants().entrySet()) {
+//            if (enchantmentIntegerEntry.getKey() instanceof IEnchant){
+//                hasCustomEnchants = true;
+//                break;
+//            }
+//        }
+//        if (!hasCustomEnchants)
+//            return;
+//
+//
+//        secondMeta.getStoredEnchants().forEach((k,v) -> {
+//            firstMeta.addStoredEnchant(k,v,true);
+//        });
+//        firstMeta
+//        meta.setLore(meta.getLore().stream().filter(line -> (!line.contains(((IEnchant) enchantment).getDisplayName()))).collect(Collectors.toList())); //удаляем старый лор
+//
+//    }
 
 
 
@@ -136,7 +229,6 @@ public class AnvilListener implements Listener {
 //
 //        }
 
-    }
     public boolean doDefaultEnchant(ItemStack stack, Enchantment enchantment, int level){
         if (!enchantment.canEnchantItem(stack))
             return false;

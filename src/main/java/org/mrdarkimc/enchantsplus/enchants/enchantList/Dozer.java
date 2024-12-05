@@ -14,6 +14,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.mrdarkimc.SatanicLib.Debugger;
@@ -96,6 +97,13 @@ public class Dozer extends EnchantmentWrapper implements IEnchant, Reloadable, I
     }
     @Override
     public boolean canEnchantItem(@NotNull ItemStack itemStack) {
+        if (itemStack.getType().equals(Material.ENCHANTED_BOOK)){
+            EnchantmentStorageMeta meta = (EnchantmentStorageMeta) itemStack.getItemMeta();
+            meta.getStoredEnchants().forEach((k,v) -> k.getItemTarget().equals(this.getItemTarget()));
+            Set<Enchantment> encs = meta.getStoredEnchants().keySet();
+            Set<EnchantmentTarget> targets = encs.stream().map(Enchantment::getItemTarget).collect(Collectors.toSet());
+            return targets.contains(EnchantmentTarget.TOOL) || targets.contains(EnchantmentTarget.BREAKABLE);
+        }
         return itemStack.getType().toString().contains("PICKAXE"); //!itemStack.hasEnchant(this) &&
     }
 

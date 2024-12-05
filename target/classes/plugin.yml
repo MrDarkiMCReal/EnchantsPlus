@@ -1,5 +1,5 @@
 name: StackableEnchants
-version: '1.0'
+version: '1.2'
 main: org.mrdarkimc.enchantsplus.EnchantsPlus
 api-version: '1.16'
 softdepend:

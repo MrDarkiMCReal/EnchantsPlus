@@ -10,6 +10,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.mrdarkimc.SatanicLib.Debugger;
@@ -22,6 +23,8 @@ import org.mrdarkimc.enchantsplus.enchants.interfaces.Infoable;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Reloadable;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class AutoSmelt extends EnchantmentWrapper implements IEnchant, Reloadable, Infoable {
 
@@ -69,6 +72,13 @@ public class AutoSmelt extends EnchantmentWrapper implements IEnchant, Reloadabl
     }
     @Override
     public boolean canEnchantItem(@NotNull ItemStack itemStack) {
+        if (itemStack.getType().equals(Material.ENCHANTED_BOOK)){
+            EnchantmentStorageMeta meta = (EnchantmentStorageMeta) itemStack.getItemMeta();
+            meta.getStoredEnchants().forEach((k,v) -> k.getItemTarget().equals(this.getItemTarget()));
+            Set<Enchantment> encs = meta.getStoredEnchants().keySet();
+            Set<EnchantmentTarget> targets = encs.stream().map(Enchantment::getItemTarget).collect(Collectors.toSet());
+            return targets.contains(EnchantmentTarget.TOOL) || targets.contains(EnchantmentTarget.BREAKABLE);
+        }
         String name = itemStack.getType().toString();
         return name.contains("PICKAXE"); //!itemStack.hasEnchant(this) &&
     }

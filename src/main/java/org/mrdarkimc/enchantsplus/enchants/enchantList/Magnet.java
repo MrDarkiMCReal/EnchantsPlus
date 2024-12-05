@@ -3,6 +3,7 @@ package org.mrdarkimc.enchantsplus.enchants.enchantList;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
@@ -11,6 +12,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.mrdarkimc.SatanicLib.Debugger;
@@ -24,6 +26,8 @@ import org.mrdarkimc.enchantsplus.enchants.interfaces.Reloadable;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Magnet extends EnchantmentWrapper implements IEnchant, Reloadable, Infoable {
 
@@ -54,6 +58,13 @@ public class Magnet extends EnchantmentWrapper implements IEnchant, Reloadable, 
     }
     @Override
     public boolean canEnchantItem(@NotNull ItemStack itemStack) {
+        if (itemStack.getType().equals(Material.ENCHANTED_BOOK)){
+            EnchantmentStorageMeta meta = (EnchantmentStorageMeta) itemStack.getItemMeta();
+            meta.getStoredEnchants().forEach((k,v) -> k.getItemTarget().equals(this.getItemTarget()));
+            Set<Enchantment> encs = meta.getStoredEnchants().keySet();
+            Set<EnchantmentTarget> targets = encs.stream().map(Enchantment::getItemTarget).collect(Collectors.toSet());
+            return targets.contains(EnchantmentTarget.TOOL) || targets.contains(EnchantmentTarget.BREAKABLE); //todo unbreakable может быть и на меч
+        }
         String name = itemStack.getType().toString();
         return name.contains("PICKAXE") | name.contains("SHOVEL") | name.contains("AXE") ; //!itemStack.hasEnchant(this) &&
     }
