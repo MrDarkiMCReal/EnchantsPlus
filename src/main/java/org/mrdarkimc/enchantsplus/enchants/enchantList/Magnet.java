@@ -1,7 +1,6 @@
 package org.mrdarkimc.enchantsplus.enchants.enchantList;
 
 import me.clip.placeholderapi.PlaceholderAPI;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -24,6 +23,7 @@ import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Infoable;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Reloadable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -34,10 +34,11 @@ public class Magnet extends EnchantmentWrapper implements IEnchant, Reloadable, 
     public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(), "encantmentsplus_magnet");
     private String displayname = ChatColor.GRAY + "Магнит "; //todo fix hardcode
     private static double chance = 0.3; //todo hardcode
+    public int maxlevel = 1;
 
     public Magnet() {
         super(key);
-        deserealizeDefaults("magnet");
+        deserealize("magnet");
         Reloadable.register(this);
     }
     @Override
@@ -52,7 +53,7 @@ public class Magnet extends EnchantmentWrapper implements IEnchant, Reloadable, 
             Enchants.setCustomLore(meta, enchantment, level);
             meta.addEnchant(enchantment, level, true);
             stack.setItemMeta(meta);
-            Enchants.setEnchantingColor(stack);
+            //Enchants.setEnchantingColor(stack);
             return true;
         }
     }
@@ -73,11 +74,21 @@ public class Magnet extends EnchantmentWrapper implements IEnchant, Reloadable, 
         return chance;
     }
 
-    public void deserealizeDefaults(String enchant) {
+    public void deserealize(String enchant) {
         this.displayname = PlaceholderAPI.setPlaceholders(null, Utils.translateHex(EnchantsPlus.config.get().getString("enchants." + enchant + ".displayname")));
         chance = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".ItemEnchantChance");
+        maxlevel = EnchantsPlus.config.get().getInt("enchants." + enchant + ".maxNaturalLevel");
+        blockedEnchantsments.clear();
+        if (EnchantsPlus.config.get().contains("enchants."+enchant+".conflictsWith") ){
+            List<String> list = EnchantsPlus.config.get().getStringList("enchants."+enchant+".conflictsWith");
+            list.forEach(s -> blockedEnchantsments.add(Enchantment.getByName(s.toUpperCase())));
+        }
     }
-
+    public List<Enchantment> blockedEnchantsments = new ArrayList<>();
+    @Override
+    public boolean conflictsWith(@NotNull Enchantment enchantment) {
+        return blockedEnchantsments.contains(enchantment);
+    }
     @Override
     public void accept(Event event) {
         if (event instanceof BlockDropItemEvent e) {
@@ -111,7 +122,7 @@ public class Magnet extends EnchantmentWrapper implements IEnchant, Reloadable, 
 
     @Override
     public int getMaxLevel() {
-        return 1;
+        return maxlevel;
     }
 
     @NotNull
@@ -122,7 +133,7 @@ public class Magnet extends EnchantmentWrapper implements IEnchant, Reloadable, 
 
     @Override
     public void reload() {
-        deserealizeDefaults("magnet");
+        deserealize("magnet");
     }
 
     @Override

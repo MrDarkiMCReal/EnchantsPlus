@@ -34,6 +34,7 @@ public class Dozer extends EnchantmentWrapper implements IEnchant, Reloadable, I
     public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(), "encantmentsplus_dozer");
     private String displayname = ChatColor.GRAY + "Будьдозер "; //todo fix hardcode
     private static double chance = 0.3; //todo hardcode
+    public int maxlevel = 1;
     private List<Material> allowedMaterials = new ArrayList<>();
 
     public Dozer() {
@@ -50,6 +51,17 @@ public class Dozer extends EnchantmentWrapper implements IEnchant, Reloadable, I
         this.displayname = PlaceholderAPI.setPlaceholders(null, Utils.translateHex(EnchantsPlus.config.get().getString("enchants." + enchant + ".displayname")));
         chance = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".ItemEnchantChance");
         allowedMaterials = EnchantsPlus.config.get().getStringList("enchants." + enchant + ".allowedMaterials").stream().map(Material::valueOf).collect(Collectors.toList());
+        maxlevel = EnchantsPlus.config.get().getInt("enchants." + enchant + ".maxNaturalLevel");
+        blockedEnchantsments.clear();
+        if (EnchantsPlus.config.get().contains("enchants."+enchant +".conflictsWith") ){
+            List<String> list = EnchantsPlus.config.get().getStringList("enchants."+enchant+".conflictsWith");
+            list.forEach(s -> blockedEnchantsments.add(Enchantment.getByName(s.toUpperCase())));
+        }
+    }
+    public List<Enchantment> blockedEnchantsments = new ArrayList<>();
+    @Override
+    public boolean conflictsWith(@NotNull Enchantment enchantment) {
+        return blockedEnchantsments.contains(enchantment);
     }
     @Override
     public boolean enchantStack(ItemStack stack, Enchantment enchantment, int level) {
@@ -65,7 +77,7 @@ public class Dozer extends EnchantmentWrapper implements IEnchant, Reloadable, I
             Enchants.setCustomLore(meta, enchantment, level);
             meta.addEnchant(enchantment, level, true);
             stack.setItemMeta(meta);
-            Enchants.setEnchantingColor(stack);
+            //Enchants.setEnchantingColor(stack);
             return true;
         }
     }
@@ -189,7 +201,7 @@ public class Dozer extends EnchantmentWrapper implements IEnchant, Reloadable, I
 
     @Override
     public int getMaxLevel() {
-        return 1;
+        return maxlevel;
     }
 
     @NotNull

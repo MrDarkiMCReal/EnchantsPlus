@@ -14,6 +14,9 @@ import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.Debug;
+import org.mrdarkimc.SatanicLib.Debugger;
+import org.mrdarkimc.enchantsplus.CommandEnchant;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
 import org.mrdarkimc.enchantsplus.handlers.Enchantable;
 import org.mrdarkimc.enchantsplus.handlers.Handler;
@@ -33,6 +36,7 @@ public class AnvilListener implements Listener {
     public void handleAnvil(PrepareAnvilEvent e) {
         //Debugger.chat("Triggering local PrepareAnvilEvent",4);
         AnvilInventory inv = e.getInventory();
+
         if (inv.getItem(0) == null || inv.getItem(1) == null)
             return;
         ItemStack cloned = inv.getFirstItem().clone();
@@ -86,7 +90,11 @@ public class AnvilListener implements Listener {
             return;
         Enchantable clonedEnc = Handler.newinstance(cloned);
         Enchantable bookEnc = Handler.newinstance(book);
+        Debugger.chat("Inv Text: " + inv.getRenameText(),2);
+        Debugger.chat("ItemText: " + cloned.displayName(),2);
+        Debugger.chat("Trying to merge items",4);
         if (clonedEnc.mergeWith(bookEnc)){
+            Debugger.chat("Merging complite",4);
             inv.setRepairCost(calculateRepairCost());
             // Debugger.chat("Enchant has been modified. Setting repair cost" ,4);
             e.setResult(cloned);

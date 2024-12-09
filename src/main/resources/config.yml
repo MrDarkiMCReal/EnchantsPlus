@@ -63,6 +63,10 @@ enchants:
   dozer:
     displayname: "&7Бульдозер "
     ItemEnchantChance: 0.2
+    maxNaturalLevel: 1
+    #Если максимальный уровень == 2, то максимальный уровень, который сможет получить игрок натуральным образом будет 1
+    #Соответственно:
+    #
     allowedMaterials: #Если игрок ломает блок, которого тут нет. То dozer не сработает.
     #Так же блоки, которые будут затронуты dozer не будут сломаны, если их нет в списке
       - STONE
@@ -82,6 +86,7 @@ enchants:
   magnet:
     displayname: "&7Магнит "
     ItemEnchantChance: 0.2
+    maxNaturalLevel: 1
   poison:
     displayname: "&7Ядовитый клинок "
     poisonTime: 200 #время на которое будет наложен яд в тиках. 200 тиков = 10 секунд
@@ -90,7 +95,9 @@ enchants:
       #P.S у игрока не 20 хп а 20.0000000
     triggerChance: 0.4 #Шанс отравить игрока
     ItemEnchantChance: 0.2
+    maxNaturalLevel: 3
   vampire:
+    maxNaturalLevel: 3
     displayname: "&7Вампиризм "
     triggerChance: 0.4 #40%
     percentOfDamage:
@@ -98,7 +105,10 @@ enchants:
       2: 0.30 #30% от урона(на 2 уровне зачарования), который нанесет игрок(после просчета всех сопротивлений) будет восстановлено с шансом 40%
       3: 0.45 #45% от урона(на 3 уровне зачарования), который нанесет игрок(после просчета всех сопротивлений) будет восстановлено с шансом 40%
     ItemEnchantChance: 0.2
+    conflictsWith:
+      -
   healthboost:
+    maxNaturalLevel: 2
     displayname: "&7Бонус жизни "
     levelModifiers:
       1: 2.5 #2.5 здоровья(1.25 сердца) дает зачарование на 1м уровне. Полный комплект +10хп (5 сердец)

@@ -22,6 +22,7 @@ import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Infoable;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Reloadable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,6 +31,7 @@ public class AutoSmelt extends EnchantmentWrapper implements IEnchant, Reloadabl
 
     private String displayName = ChatColor.GRAY + "Автоплавка "; // TODO: fix hardcode
     private static double chance = 0.3; // TODO: fix hardcode
+    private int maxlevel = 1;
 
     public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(), "encantmentsplus_autosmelt");
 
@@ -37,6 +39,11 @@ public class AutoSmelt extends EnchantmentWrapper implements IEnchant, Reloadabl
         super(key);
         deserialize("autosmelt");
         Reloadable.register(this);
+    }
+    public List<Enchantment> blockedEnchantsments = new ArrayList<>();
+    @Override
+    public boolean conflictsWith(@NotNull Enchantment enchantment) {
+        return blockedEnchantsments.contains(enchantment);
     }
 
 
@@ -66,7 +73,7 @@ public class AutoSmelt extends EnchantmentWrapper implements IEnchant, Reloadabl
             Enchants.setCustomLore(meta, enchantment, level);
             meta.addEnchant(enchantment, level, true);
             stack.setItemMeta(meta);
-            Enchants.setEnchantingColor(stack);
+            //Enchants.setEnchantingColor(stack);
             return true;
         }
     }
@@ -94,6 +101,12 @@ public class AutoSmelt extends EnchantmentWrapper implements IEnchant, Reloadabl
                 null, Utils.translateHex(EnchantsPlus.config.get().getString("enchants." + enchant + ".displayname"))
         );
         chance = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".ItemEnchantChance");
+        maxlevel = EnchantsPlus.config.get().getInt("enchants." + enchant + ".maxNaturalLevel");
+        blockedEnchantsments.clear();
+        if (EnchantsPlus.config.get().contains("enchants.autosmelt.conflictsWith") ){
+            List<String> list = EnchantsPlus.config.get().getStringList("enchants.autosmelt.conflictsWith");
+            list.forEach(s -> blockedEnchantsments.add(Enchantment.getByName(s.toUpperCase())));
+        }
     }
 
     @Override
@@ -139,7 +152,7 @@ public class AutoSmelt extends EnchantmentWrapper implements IEnchant, Reloadabl
 
     @Override
     public int getMaxLevel() {
-        return 1;
+        return maxlevel;
     }
 
     @NotNull

@@ -69,22 +69,22 @@ public class ItemEnchantListener implements Listener, Reloadable {
         }
         Debugger.chat("Random is: " + rand,1);
         Debugger.chat("Global chance: " + globalChance,1);
-        if (rand <= enc.getEnchantChance()) {
-            //отменить эвент
-            //забрать эксп
-            //зачаровать
-            //
-            Debugger.chat("Calling doEnchant method",1);
-            doEnchant(stack, Enchants.getTarget(stack)); //Enchants.getTarget(stack)
-
-//            int levelcost = event.getExpLevelCost();
+//        if (rand <= enc.getEnchantChance()) {
+//            //отменить эвент
+//            //забрать эксп
+//            //зачаровать
+//            //
+//            Debugger.chat("Calling doEnchant method",1);
+//            doEnchant(stack, Enchants.getTarget(stack)); //Enchants.getTarget(stack)
 //
+////            int levelcost = event.getExpLevelCost();
+////
+////
+////            Player player = event.getEnchanter();
+////            enc.addRandomEnchant();
+////            player.setLevel(player.getLevel()-levelcost);
 //
-//            Player player = event.getEnchanter();
-//            enc.addRandomEnchant();
-//            player.setLevel(player.getLevel()-levelcost);
-
-        }
+//        }
 
     }
     private void doEnchant(ItemStack stack, EnchantmentTarget target){

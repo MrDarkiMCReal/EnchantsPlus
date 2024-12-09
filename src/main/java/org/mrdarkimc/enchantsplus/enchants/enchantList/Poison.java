@@ -37,6 +37,7 @@ public class Poison extends EnchantmentWrapper implements IEnchant, TriggerChanc
     private static double triggerChance = 0.3; //todo hardcode
     public static double multiplier = 1;
     public static int poisonTime = 200;
+    public int maxlevel = 3;
     public static Map<Player, Integer> poisonedPlayers = new HashMap<>();
 
     public Poison() {
@@ -57,9 +58,14 @@ public class Poison extends EnchantmentWrapper implements IEnchant, TriggerChanc
             Enchants.setCustomLore(meta, enchantment, level);
             meta.addEnchant(enchantment, level, true);
             stack.setItemMeta(meta);
-            Enchants.setEnchantingColor(stack);
+            //Enchants.setEnchantingColor(stack);
             return true;
         }
+    }
+    public List<Enchantment> blockedEnchantsments = new ArrayList<>();
+    @Override
+    public boolean conflictsWith(@NotNull Enchantment enchantment) {
+        return blockedEnchantsments.contains(enchantment);
     }
     @Override
     public boolean canEnchantItem(@NotNull ItemStack itemStack) {
@@ -97,11 +103,19 @@ public class Poison extends EnchantmentWrapper implements IEnchant, TriggerChanc
         triggerChance = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".triggerChance");
         multiplier = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".damageModifier");
         chance = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".ItemEnchantChance");
+        maxlevel = EnchantsPlus.config.get().getInt("enchants." + enchant + ".maxNaturalLevel");
+        blockedEnchantsments.clear();
+        if (EnchantsPlus.config.get().contains("enchants."+enchant+".conflictsWith") ){
+            List<String> list = EnchantsPlus.config.get().getStringList("enchants."+enchant+".conflictsWith");
+            list.forEach(s -> blockedEnchantsments.add(Enchantment.getByName(s.toUpperCase())));
+        }
     }
 
     @Override
     public void accept(Event event) {
         if (event instanceof EntityDamageByEntityEvent e) {
+            if (e.isCancelled())
+                return;
             if (e.getEntity() instanceof Player victim) {
                 if (!poisonedPlayers.containsKey(victim)) {
                     Debugger.chat("Poison chance: " + triggerChance, 2);
@@ -142,7 +156,7 @@ public class Poison extends EnchantmentWrapper implements IEnchant, TriggerChanc
 
     @Override
     public int getMaxLevel() {
-        return 3;
+        return maxlevel;
     }
 
     @NotNull

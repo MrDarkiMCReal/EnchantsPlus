@@ -20,10 +20,7 @@ import org.mrdarkimc.enchantsplus.enchants.EnchantmentWrapper;
 import org.mrdarkimc.enchantsplus.enchants.Enchants;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChance, Reloadable, Infoable {
@@ -33,6 +30,12 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
     private static double chance = 0.3; //todo hardcode
     private static double triggerChance = 0.3; //todo hardcode
     public Map<Integer, Double> levelMultiplierMap = new HashMap<>();
+    public int maxlevel = 3;
+    public List<Enchantment> blockedEnchantsments = new ArrayList<>();
+    @Override
+    public boolean conflictsWith(@NotNull Enchantment enchantment) {
+        return blockedEnchantsments.contains(enchantment);
+    }
 
     public Vampire() {
         super(key);
@@ -51,7 +54,7 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
             Enchants.setCustomLore(meta, enchantment, level);
             meta.addEnchant(enchantment, level, true);
             stack.setItemMeta(meta);
-            Enchants.setEnchantingColor(stack);
+            //Enchants.setEnchantingColor(stack);
             return true;
         }
     }
@@ -79,6 +82,8 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
     @Override
     public void accept(Event event) {
         if (event instanceof EntityDamageByEntityEvent e) {
+            if (e.isCancelled())
+                return;
             if (e.getDamager() instanceof Player attacker) {
                 double rand = ((double) Math.round((Math.random() * 100)) / 100);
                 Debugger.chat("[vampire] Trigger chance: " + triggerChance, 4);
@@ -109,6 +114,16 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
         }
         triggerChance = EnchantsPlus.config.get().getDouble("enchants.vampire.triggerChance");
         chance = EnchantsPlus.config.get().getDouble("enchants.vampire.ItemEnchantChance");
+        maxlevel = EnchantsPlus.config.get().getInt("enchants.vampire.maxNaturalLevel");
+        blockedEnchantsments.clear();
+        if (EnchantsPlus.config.get().contains("enchants.vampire.conflictsWith")){
+            List<String> list = EnchantsPlus.config.get().getStringList("enchants.vampire.conflictsWith");
+            list.forEach(s -> {
+                Debugger.chat(Enchantment.DIG_SPEED.getKey().getKey(),4);
+                blockedEnchantsments.add(Enchantment.getByKey(NamespacedKey.fromString(s)));
+                Debugger.chat("Handling: " + s,4);
+            });
+        }
     }
 
     @Override
@@ -122,8 +137,8 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
     }
 
     @Override
-    public int getMaxLevel() {
-        return 3;
+    public int getMaxLevel(){
+        return maxlevel;
     }
 
     @NotNull
@@ -150,6 +165,10 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
         Debugger.chat("[vampire] Cached levels: ",1);
         levelMultiplierMap.forEach((key,value) -> {
             Debugger.chat("Level: " + key + " Multiplier: " + value,4);
+        });
+        Debugger.chat("[vampire] Cached blockedEnchants");
+        blockedEnchantsments.forEach(l -> {
+            Debugger.chat("[vampire] Cached Blocked enchant:" + l,4);
         });
     }
 }

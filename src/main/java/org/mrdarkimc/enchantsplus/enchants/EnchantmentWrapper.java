@@ -103,7 +103,7 @@ public class EnchantmentWrapper extends Enchantment {
     @NotNull
     @Override
     public EnchantmentRarity getRarity() {
-        return EnchantmentRarity.COMMON;
+        return EnchantmentRarity.RARE;
     }
 
     @Override

@@ -9,6 +9,7 @@ org\mrdarkimc\enchantsplus\utils\Randomizer.class
 org\mrdarkimc\enchantsplus\listeners\AnvilListener.class
 org\mrdarkimc\enchantsplus\handlers\NormalBook.class
 org\mrdarkimc\enchantsplus\enchants\interfaces\IEnchant.class
+org\mrdarkimc\enchantsplus\enchants\enchantList\Evasion.class
 org\mrdarkimc\enchantsplus\enchants\interfaces\Chanceable.class
 org\mrdarkimc\enchantsplus\handlers\ItemEnchant.class
 org\mrdarkimc\enchantsplus\enchants\Enchants.class
@@ -16,8 +17,8 @@ org\mrdarkimc\enchantsplus\enchants\interfaces\Infoable.class
 org\mrdarkimc\enchantsplus\enchants\enchantList\Poison$1.class
 org\mrdarkimc\enchantsplus\EnchantsPlus.class
 org\mrdarkimc\enchantsplus\handlers\EnchantType.class
+org\mrdarkimc\enchantsplus\enchants\enchantList\FarArrow.class
 org\mrdarkimc\enchantsplus\enchants\interfaces\TriggerChance.class
-org\mrdarkimc\enchantsplus\enchants\enchantList\MagicBlock.class
 org\mrdarkimc\enchantsplus\listeners\ItemEnchantListener.class
 org\mrdarkimc\enchantsplus\enchants\enchantList\AutoSmelt$1.class
 org\mrdarkimc\enchantsplus\enchants\enchantList\Vampire.class

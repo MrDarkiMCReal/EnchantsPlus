@@ -2,8 +2,11 @@ package org.mrdarkimc.enchantsplus.enchants;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -34,6 +37,8 @@ public class Enchants implements Reloadable {
         registerNewEnchantments(VAMPIRE);
         registerNewEnchantments(POISON);
         registerNewEnchantments(HEALTHBOOST);
+        registerNewEnchantments(EVASION);
+        registerNewEnchantments(FARARROW);
         //
     }
 
@@ -49,6 +54,8 @@ public class Enchants implements Reloadable {
     public static final Enchantment VAMPIRE = new Vampire();
     public static final Enchantment POISON = new Poison();
     public static final Enchantment HEALTHBOOST = new HealthBoost();
+    public static final Enchantment EVASION = new Evasion();
+    public static final Enchantment FARARROW = new FarArrow();
 
     public static ItemStack applyCustomEnchant(ItemStack stack, Map<Enchantment, Integer> enchats) {
         if (stack.getType().equals(Material.BOOK)) {
@@ -93,18 +100,33 @@ public class Enchants implements Reloadable {
         stack.setItemMeta(meta);
         return stack;
     }
+    public static boolean doEnchantsConflict(Map<Enchantment, Integer> original, Map<Enchantment, Integer> mergewithMe){
+        for (Enchantment enc : original.keySet()) {
+            Debugger.chat("Handling: " + enc,2);
+            for (Enchantment secEnc : mergewithMe.keySet()) {
+                Debugger.chat("Trying to check conflict with: " + secEnc,2);
+                if (enc.conflictsWith(secEnc)) {
+                    Debugger.chat("Theyre conflicting. Returning true");
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     public static void setEnchantingColor(ItemStack cloned){
         Component displayName = cloned.getItemMeta().displayName();
 
         if (displayName == null) {
 
-            displayName = Component.translatable(cloned.getTranslationKey()) // замените на ваш ключ
-                    .color(TextColor.color(5636095))
-                    .decoration(TextDecoration.ITALIC,false);
+            displayName = Component.translatable(cloned.getTranslationKey());
+            displayName = displayName.style(displayName.style().color(TextColor.color(5636095)));
+                    //.color(TextColor.color(5636095))
+                    //.decoration(TextDecoration.ITALIC,false);
         } else {
             displayName = displayName
-                    .color(TextColor.color(5636095))
-                    .decoration(TextDecoration.ITALIC,false);
+                    //.color(TextColor.color(5636095))
+                    .style(displayName.style().color(TextColor.color(5636095)));
+                    //.decoration(TextDecoration.ITALIC,false);
         }
 
         ItemMeta meta1 = cloned.getItemMeta();
@@ -198,6 +220,7 @@ public class Enchants implements Reloadable {
                     EnchantmentTarget.TOOL;
             case LEATHER_HELMET, IRON_HELMET, GOLDEN_HELMET, DIAMOND_HELMET, NETHERITE_HELMET, LEATHER_BOOTS, IRON_BOOTS, GOLDEN_BOOTS, DIAMOND_BOOTS, NETHERITE_BOOTS, LEATHER_LEGGINGS, IRON_LEGGINGS, GOLDEN_LEGGINGS, DIAMOND_LEGGINGS, NETHERITE_LEGGINGS, LEATHER_CHESTPLATE, IRON_CHESTPLATE, GOLDEN_CHESTPLATE, DIAMOND_CHESTPLATE, NETHERITE_CHESTPLATE ->
                     EnchantmentTarget.ARMOR;
+            case BOW, CROSSBOW -> EnchantmentTarget.BOW_AND_CROSSBOW;
             default -> EnchantmentTarget.WEAPON; //todo fix this dump shit
         };
     }
@@ -262,12 +285,12 @@ public class Enchants implements Reloadable {
         FileConfiguration file = EnchantsPlus.config.get();
         levelDisplay.clear();
         try {
-            for (int i = 1; i < 10; i++) {
+            for (int i = 1; i <= 10; i++) {
                 String value = PlaceholderAPI.setPlaceholders(null, Utils.translateHex(file.getString("global.levels." + i)));
                 levelDisplay.put(i, value);
             }
         }catch (NullPointerException e){
-            //Bukkit.getLogger().info(ChatColor.RED + "Ошибка в настройках уровня. Уровней должно быть минимум 10");
+            Bukkit.getLogger().info(ChatColor.RED + "Ошибка в настройках уровня. Уровней должно быть минимум 10");
         }
 
 

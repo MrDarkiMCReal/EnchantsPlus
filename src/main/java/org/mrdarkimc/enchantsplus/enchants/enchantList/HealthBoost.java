@@ -32,16 +32,26 @@ public class HealthBoost extends EnchantmentWrapper implements IEnchant, Reloada
     public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(), "encantmentsplus_healthboost");
     private String displayname = ChatColor.GRAY + "Бонус жизни "; //todo fix hardcode
     private static double chance = 0.3; //todo hardcode
+    public int maxlevel = 2;
     public HealthBoost() {
         super(key);
         Reloadable.register(this);
         deserealize();
     }
+    public List<Enchantment> blockedEnchantsments = new ArrayList<>();
+    @Override
+    public boolean conflictsWith(@NotNull Enchantment enchantment) {
+        return blockedEnchantsments.contains(enchantment);
+    }
+    @Override
+    public int getMaxLevel(){
+        return maxlevel;
+    }
     @Override
     public boolean canEnchantItem(@NotNull ItemStack itemStack) {
         if (itemStack.getType().equals(Material.ENCHANTED_BOOK)){
             EnchantmentStorageMeta meta = (EnchantmentStorageMeta) itemStack.getItemMeta();
-            meta.getStoredEnchants().forEach((k,v) -> k.getItemTarget().equals(this.getItemTarget()));
+            //meta.getStoredEnchants().forEach((k,v) -> k.getItemTarget().equals(this.getItemTarget()));
             Set<Enchantment> encs = meta.getStoredEnchants().keySet();
             Set<EnchantmentTarget> targets = encs.stream().map(Enchantment::getItemTarget).collect(Collectors.toSet());
             return targets.contains(EnchantmentTarget.ARMOR) ||  targets.contains(EnchantmentTarget.WEARABLE) ||targets.contains(EnchantmentTarget.ARMOR_HEAD)|| targets.contains(EnchantmentTarget.ARMOR_TORSO)|| targets.contains(EnchantmentTarget.ARMOR_LEGS) || targets.contains(EnchantmentTarget.ARMOR_FEET);
@@ -68,7 +78,7 @@ public class HealthBoost extends EnchantmentWrapper implements IEnchant, Reloada
             meta.addEnchant(this,level,true);
             Enchants.setCustomLore(meta,this,level);
             stack.setItemMeta(meta);
-            Enchants.setEnchantingColor(stack);
+            //Enchants.setEnchantingColor(stack);
             //Enchants.setEnchantingColor(stack);
             return true;
         }
@@ -94,16 +104,27 @@ public void deserealize(){
         //todo deserealize
     FileConfiguration config = EnchantsPlus.config.get();
         this.displayname = PlaceholderAPI.setPlaceholders(null, Utils.translateHex(EnchantsPlus.config.get().getString("enchants.healthboost.displayname")));
-        chance = config.getDouble("enchants.healthboost.chance"); //todo вынести в конфиг
+        chance = config.getDouble("enchants.healthboost.ItemEnchantChance"); //todo вынести в конфиг
         levelModifierMap.clear();
         Set<String> set = config.getConfigurationSection("enchants.healthboost.levelModifiers").getKeys(false);
         set.forEach(s -> {
             levelModifierMap.put(Integer.parseInt(s),config.getDouble("enchants.healthboost.levelModifiers."+s));
         });
+        maxlevel = EnchantsPlus.config.get().getInt("enchants.healthboost.maxNaturalLevel");
+    blockedEnchantsments.clear();
+    if (EnchantsPlus.config.get().contains("enchants.healthboost.conflictsWith") ){
+        List<String> list = EnchantsPlus.config.get().getStringList("enchants.healthboost.conflictsWith");
+        list.forEach(s -> blockedEnchantsments.add(Enchantment.getByName(s.toUpperCase())));
+    }
         //levelModifierMap.put(1,2.5); //todo hardcode
         //levelModifierMap.put(2,5.0); //todo hardcode
 
 }
+        @NotNull
+        @Override
+        public EnchantmentTarget getItemTarget() {
+            return EnchantmentTarget.ARMOR;
+        }
     @Override
     public void reload() {
         deserealize();
