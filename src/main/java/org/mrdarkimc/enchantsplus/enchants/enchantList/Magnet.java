@@ -34,6 +34,7 @@ public class Magnet extends EnchantmentWrapper implements IEnchant, Reloadable, 
     public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(), "encantmentsplus_magnet");
     private String displayname = ChatColor.GRAY + "Магнит "; //todo fix hardcode
     private static double chance = 0.3; //todo hardcode
+    private int maxTotalLEvel = 1;
     public int maxlevel = 1;
 
     public Magnet() {
@@ -57,6 +58,12 @@ public class Magnet extends EnchantmentWrapper implements IEnchant, Reloadable, 
             return true;
         }
     }
+
+    @Override
+    public int getmaxTotalLevel() {
+        return maxTotalLEvel;
+    }
+
     @Override
     public boolean canEnchantItem(@NotNull ItemStack itemStack) {
         if (itemStack.getType().equals(Material.ENCHANTED_BOOK)){
@@ -78,6 +85,7 @@ public class Magnet extends EnchantmentWrapper implements IEnchant, Reloadable, 
         this.displayname = PlaceholderAPI.setPlaceholders(null, Utils.translateHex(EnchantsPlus.config.get().getString("enchants." + enchant + ".displayname")));
         chance = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".ItemEnchantChance");
         maxlevel = EnchantsPlus.config.get().getInt("enchants." + enchant + ".maxNaturalLevel");
+        maxTotalLEvel = EnchantsPlus.config.get().getInt("enchants." + enchant + ".maxTotalLevel");
         blockedEnchantsments.clear();
         if (EnchantsPlus.config.get().contains("enchants."+enchant+".conflictsWith") ){
             List<String> list = EnchantsPlus.config.get().getStringList("enchants."+enchant+".conflictsWith");

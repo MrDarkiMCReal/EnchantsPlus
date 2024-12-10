@@ -35,6 +35,7 @@ public class Dozer extends EnchantmentWrapper implements IEnchant, Reloadable, I
     private String displayname = ChatColor.GRAY + "Будьдозер "; //todo fix hardcode
     private static double chance = 0.3; //todo hardcode
     public int maxlevel = 1;
+    private int maxTotalLEvel = 1;
     private List<Material> allowedMaterials = new ArrayList<>();
 
     public Dozer() {
@@ -52,6 +53,7 @@ public class Dozer extends EnchantmentWrapper implements IEnchant, Reloadable, I
         chance = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".ItemEnchantChance");
         allowedMaterials = EnchantsPlus.config.get().getStringList("enchants." + enchant + ".allowedMaterials").stream().map(Material::valueOf).collect(Collectors.toList());
         maxlevel = EnchantsPlus.config.get().getInt("enchants." + enchant + ".maxNaturalLevel");
+        maxTotalLEvel = EnchantsPlus.config.get().getInt("enchants." + enchant + ".maxTotalLevel");
         blockedEnchantsments.clear();
         if (EnchantsPlus.config.get().contains("enchants."+enchant +".conflictsWith") ){
             List<String> list = EnchantsPlus.config.get().getStringList("enchants."+enchant+".conflictsWith");
@@ -80,6 +82,11 @@ public class Dozer extends EnchantmentWrapper implements IEnchant, Reloadable, I
             //Enchants.setEnchantingColor(stack);
             return true;
         }
+    }
+
+    @Override
+    public int getmaxTotalLevel() {
+        return maxTotalLEvel;
     }
 
     @Override

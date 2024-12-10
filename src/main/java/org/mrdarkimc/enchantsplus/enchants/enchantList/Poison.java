@@ -37,6 +37,7 @@ public class Poison extends EnchantmentWrapper implements IEnchant, TriggerChanc
     private static double triggerChance = 0.3; //todo hardcode
     public static double multiplier = 1;
     public static int poisonTime = 200;
+    private int maxTotalLEvel = 1;
     public int maxlevel = 3;
     public static Map<Player, Integer> poisonedPlayers = new HashMap<>();
 
@@ -62,6 +63,12 @@ public class Poison extends EnchantmentWrapper implements IEnchant, TriggerChanc
             return true;
         }
     }
+
+    @Override
+    public int getmaxTotalLevel() {
+        return maxTotalLEvel;
+    }
+
     public List<Enchantment> blockedEnchantsments = new ArrayList<>();
     @Override
     public boolean conflictsWith(@NotNull Enchantment enchantment) {
@@ -104,6 +111,7 @@ public class Poison extends EnchantmentWrapper implements IEnchant, TriggerChanc
         multiplier = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".damageModifier");
         chance = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".ItemEnchantChance");
         maxlevel = EnchantsPlus.config.get().getInt("enchants." + enchant + ".maxNaturalLevel");
+        maxTotalLEvel = EnchantsPlus.config.get().getInt("enchants." + enchant + ".maxTotalLevel");
         blockedEnchantsments.clear();
         if (EnchantsPlus.config.get().contains("enchants."+enchant+".conflictsWith") ){
             List<String> list = EnchantsPlus.config.get().getStringList("enchants."+enchant+".conflictsWith");

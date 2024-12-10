@@ -31,6 +31,7 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
     private static double triggerChance = 0.3; //todo hardcode
     public Map<Integer, Double> levelMultiplierMap = new HashMap<>();
     public int maxlevel = 3;
+    private int maxTotalLEvel = 1;
     public List<Enchantment> blockedEnchantsments = new ArrayList<>();
     @Override
     public boolean conflictsWith(@NotNull Enchantment enchantment) {
@@ -58,6 +59,12 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
             return true;
         }
     }
+
+    @Override
+    public int getmaxTotalLevel() {
+        return maxTotalLEvel;
+    }
+
     @Override
     public boolean canEnchantItem(@NotNull ItemStack itemStack) {
         if (itemStack.getType().equals(Material.ENCHANTED_BOOK)){
@@ -67,7 +74,7 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
             Set<EnchantmentTarget> targets = encs.stream().map(Enchantment::getItemTarget).collect(Collectors.toSet());
             return targets.contains(EnchantmentTarget.WEAPON) || targets.contains(EnchantmentTarget.TRIDENT);
         }
-        String name = itemStack.getType().toString();
+        String name = itemStack.getType().toString(); //golden_pickaxe
         return name.contains("SWORD") | name.contains("TRIDENT") | name.contains("_AXE") ; //!itemStack.hasEnchant(this) &&
     }
 
@@ -115,6 +122,7 @@ public class Vampire extends EnchantmentWrapper implements IEnchant, TriggerChan
         triggerChance = EnchantsPlus.config.get().getDouble("enchants.vampire.triggerChance");
         chance = EnchantsPlus.config.get().getDouble("enchants.vampire.ItemEnchantChance");
         maxlevel = EnchantsPlus.config.get().getInt("enchants.vampire.maxNaturalLevel");
+        maxTotalLEvel = EnchantsPlus.config.get().getInt("enchants.vampire.maxTotalLevel");
         blockedEnchantsments.clear();
         if (EnchantsPlus.config.get().contains("enchants.vampire.conflictsWith")){
             List<String> list = EnchantsPlus.config.get().getStringList("enchants.vampire.conflictsWith");

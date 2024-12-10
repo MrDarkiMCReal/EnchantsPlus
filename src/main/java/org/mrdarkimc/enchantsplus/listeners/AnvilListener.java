@@ -1,5 +1,8 @@
 package org.mrdarkimc.enchantsplus.listeners;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.TranslatableComponent;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
@@ -81,6 +84,22 @@ public class AnvilListener implements Listener {
     public void handleAnvil3(PrepareAnvilEvent e) {
         //Debugger.chat("Triggering local PrepareAnvilEvent",4);
         AnvilInventory inv = e.getInventory();
+        if (inv.getItem(0) !=null && inv.getItem(1) == null){ //handle renaming
+            Debugger.chat("Itemname: "+ TextComponent.ofChildren(inv.getItem(0).displayName()).content(),4);
+            Debugger.chat("renaming text: " + inv.getRenameText(),4);
+            if (Component.translatable(inv.getItem(0).getTranslationKey()).asComponent().equals(TextComponent.ofChildren(inv.getItem(0).displayName()).content())){
+                Debugger.chat("penis", 4);
+            }
+            if (TextComponent.ofChildren(inv.getItem(0).displayName()).content().equals(inv.getRenameText())){
+                e.setResult(new ItemStack(Material.AIR));
+            }else {
+                ItemStack stackToRename = inv.getItem(0).clone();
+                ItemMeta meta = stackToRename.getItemMeta();
+                meta.displayName(Component.text(inv.getRenameText()));
+                stackToRename.setItemMeta(meta);
+                e.setResult(stackToRename);
+            }
+        }
         if (inv.getItem(0) == null || inv.getItem(1) == null)
             return;
         ItemStack cloned = inv.getFirstItem().clone();
@@ -91,8 +110,13 @@ public class AnvilListener implements Listener {
         Enchantable clonedEnc = Handler.newinstance(cloned);
         Enchantable bookEnc = Handler.newinstance(book);
         Debugger.chat("Inv Text: " + inv.getRenameText(),2);
-        Debugger.chat("ItemText: " + cloned.displayName(),2);
+        Debugger.chat("ItemText: " + cloned.displayName(),21);
         Debugger.chat("Trying to merge items",4);
+        if (!TextComponent.ofChildren(inv.getItem(0).displayName()).content().equals(inv.getRenameText())){
+            ItemMeta meta = cloned.getItemMeta();
+            meta.displayName(Component.text(inv.getRenameText()));
+            cloned.setItemMeta(meta);
+        }
         if (clonedEnc.mergeWith(bookEnc)){
             Debugger.chat("Merging complite",4);
             inv.setRepairCost(calculateRepairCost());
@@ -100,6 +124,8 @@ public class AnvilListener implements Listener {
             e.setResult(cloned);
             anvils.add(e.getInventory());
             return;
+        }else {
+            e.setResult(new ItemStack(Material.AIR)); //todo really?
         }
         return;
         //

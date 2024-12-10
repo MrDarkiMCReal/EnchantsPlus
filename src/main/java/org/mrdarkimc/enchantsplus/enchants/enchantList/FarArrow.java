@@ -36,6 +36,7 @@ public class FarArrow extends EnchantmentWrapper implements IEnchant, Reloadable
     public int damageLimit = 100;
     public List<Enchantment> blockedEnchantsments = new ArrayList<>();
     public int maxlevel = 2; //todo hardcode
+    public int maxTotalLEvel = 1;
     public FarArrow() {
         super(key);
         deserealize();
@@ -150,6 +151,11 @@ public class FarArrow extends EnchantmentWrapper implements IEnchant, Reloadable
     }
 
     @Override
+    public int getmaxTotalLevel() {
+        return maxTotalLEvel;
+    }
+
+    @Override
     public void printInfo() {
         Debugger.chat("[far arrow] Cached displayname: " + displayname,1);
         Debugger.chat("[far arrow] Cached enchant chance: " + chance,1);
@@ -172,6 +178,7 @@ public class FarArrow extends EnchantmentWrapper implements IEnchant, Reloadable
             levelModifierMap.put(Integer.parseInt(s),config.getDouble("enchants.fararrow.levelModifiers."+s));
         });
         maxlevel = EnchantsPlus.config.get().getInt("enchants.fararrow.maxNaturalLevel");
+        maxTotalLEvel = EnchantsPlus.config.get().getInt("enchants.fararrow.maxTotalLevel");
         damageLimit = EnchantsPlus.config.get().getInt("enchants.fararrow.damagelimit");
         blockedEnchantsments.clear();
         if (EnchantsPlus.config.get().contains("enchants.fararrow.conflictsWith") ){

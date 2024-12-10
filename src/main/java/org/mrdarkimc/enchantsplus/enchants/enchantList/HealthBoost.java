@@ -33,6 +33,7 @@ public class HealthBoost extends EnchantmentWrapper implements IEnchant, Reloada
     private String displayname = ChatColor.GRAY + "Бонус жизни "; //todo fix hardcode
     private static double chance = 0.3; //todo hardcode
     public int maxlevel = 2;
+    private int maxTotalLEvel = 1;
     public HealthBoost() {
         super(key);
         Reloadable.register(this);
@@ -84,7 +85,12 @@ public class HealthBoost extends EnchantmentWrapper implements IEnchant, Reloada
         }
     }
 
-public void reEnchantHealthBoost(ItemStack stack, int level){
+    @Override
+    public int getmaxTotalLevel() {
+        return maxTotalLEvel;
+    }
+
+    public void reEnchantHealthBoost(ItemStack stack, int level){
     EquipmentSlot slot = stack.getType().getEquipmentSlot();
         ItemMeta meta =  stack.getItemMeta();
 
@@ -111,6 +117,7 @@ public void deserealize(){
             levelModifierMap.put(Integer.parseInt(s),config.getDouble("enchants.healthboost.levelModifiers."+s));
         });
         maxlevel = EnchantsPlus.config.get().getInt("enchants.healthboost.maxNaturalLevel");
+    maxTotalLEvel = EnchantsPlus.config.get().getInt("enchants.healthboost.maxTotalLevel");
     blockedEnchantsments.clear();
     if (EnchantsPlus.config.get().contains("enchants.healthboost.conflictsWith") ){
         List<String> list = EnchantsPlus.config.get().getStringList("enchants.healthboost.conflictsWith");

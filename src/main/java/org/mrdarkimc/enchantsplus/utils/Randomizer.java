@@ -21,7 +21,7 @@ public class Randomizer {
         Debugger.chat("Summ of chances: " + totalChance,7);
 
         //Random random = new Random();
-        double rand = ((double) Math.round((Math.random() * 100)) /100);
+        double rand = ((double) Math.round(((Math.random()* totalChance) * 100)) /100);
         //double randomValue = random.nextDouble() * totalChance;
         Debugger.chat("Random Number: " + rand,7);
         double cumulativeChance = 0.0;

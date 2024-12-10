@@ -73,7 +73,7 @@ public class EnchantedBook implements Enchantable {
                     Enchants.setCustomLore(meta, enchantment, level);
                     meta.addStoredEnchant(enchantment, level, true);
                     stack.setItemMeta(meta);
-                    Enchants.setEnchantingColor(stack);
+                    //Enchants.setEnchantingColor(stack);
                     doreturn = true;
                     break;
                 }

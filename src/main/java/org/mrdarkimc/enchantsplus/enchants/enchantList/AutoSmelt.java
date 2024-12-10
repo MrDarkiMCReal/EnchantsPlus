@@ -32,6 +32,7 @@ public class AutoSmelt extends EnchantmentWrapper implements IEnchant, Reloadabl
     private String displayName = ChatColor.GRAY + "Автоплавка "; // TODO: fix hardcode
     private static double chance = 0.3; // TODO: fix hardcode
     private int maxlevel = 1;
+    private int maxTotalLEvel = 1;
 
     public static final NamespacedKey key = new NamespacedKey(EnchantsPlus.getInstance(), "encantmentsplus_autosmelt");
 
@@ -77,6 +78,12 @@ public class AutoSmelt extends EnchantmentWrapper implements IEnchant, Reloadabl
             return true;
         }
     }
+
+    @Override
+    public int getmaxTotalLevel() {
+        return maxTotalLEvel;
+    }
+
     @Override
     public boolean canEnchantItem(@NotNull ItemStack itemStack) {
         if (itemStack.getType().equals(Material.ENCHANTED_BOOK)){
@@ -102,6 +109,7 @@ public class AutoSmelt extends EnchantmentWrapper implements IEnchant, Reloadabl
         );
         chance = EnchantsPlus.config.get().getDouble("enchants." + enchant + ".ItemEnchantChance");
         maxlevel = EnchantsPlus.config.get().getInt("enchants." + enchant + ".maxNaturalLevel");
+        maxTotalLEvel = EnchantsPlus.config.get().getInt("enchants." + enchant + ".maxTotalLevel");
         blockedEnchantsments.clear();
         if (EnchantsPlus.config.get().contains("enchants.autosmelt.conflictsWith") ){
             List<String> list = EnchantsPlus.config.get().getStringList("enchants.autosmelt.conflictsWith");

@@ -77,7 +77,7 @@ public class Enchants implements Reloadable {
                     setCustomLore(customMeta, enchantment, enchats.get(enchantment));
                     customMeta.addEnchant(enchantment, enchats.get(enchantment), true);
                     stack.setItemMeta(customMeta);
-                    setEnchantingColor(stack);
+                    //setEnchantingColor(stack);
                     return stack;
                 }
             } else {
@@ -119,14 +119,14 @@ public class Enchants implements Reloadable {
         if (displayName == null) {
 
             displayName = Component.translatable(cloned.getTranslationKey());
-            displayName = displayName.style(displayName.style().color(TextColor.color(5636095)));
-                    //.color(TextColor.color(5636095))
-                    //.decoration(TextDecoration.ITALIC,false);
+            displayName = displayName
+                    .color(TextColor.color(5636095))
+                    .decoration(TextDecoration.ITALIC,false);
         } else {
             displayName = displayName
-                    //.color(TextColor.color(5636095))
-                    .style(displayName.style().color(TextColor.color(5636095)));
-                    //.decoration(TextDecoration.ITALIC,false);
+                    .color(TextColor.color(5636095))
+                    //.style(displayName.style().color(TextColor.color(5636095)));
+                    .decoration(TextDecoration.ITALIC,false);
         }
 
         ItemMeta meta1 = cloned.getItemMeta();
@@ -143,7 +143,7 @@ public class Enchants implements Reloadable {
         meta.setLore(meta.getLore().stream().filter(line -> (!line.contains(((IEnchant) enchantment).getDisplayName()))).collect(Collectors.toList())); //удаляем старый лор
         setCustomLore(meta, enchantment, level);
         stack.setItemMeta(meta);
-        setEnchantingColor(stack);
+        //setEnchantingColor(stack);
     }
 //            ItemMeta meta = stack.getItemMeta();
 //

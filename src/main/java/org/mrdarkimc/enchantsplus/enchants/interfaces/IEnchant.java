@@ -13,5 +13,7 @@ public interface IEnchant extends Chanceable {
     String getDisplayName();
     List<String> getCustomLore();
     boolean enchantStack(ItemStack stack, Enchantment enchantment, int level);
+    int getmaxTotalLevel();
+
 
 }

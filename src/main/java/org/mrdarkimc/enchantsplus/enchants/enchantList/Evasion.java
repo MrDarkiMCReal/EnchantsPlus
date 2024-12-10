@@ -37,6 +37,7 @@ public class Evasion extends EnchantmentWrapper implements IEnchant, Reloadable,
     public Map<Integer,Double> levelModifierMap = new HashMap<>();
     public List<Enchantment> blockedEnchantsments = new ArrayList<>();
     public int maxlevel = 2; //todo hardcode
+    private int maxTotalLEvel = 1;
     public Evasion() {
         super(key);
         deserealize();
@@ -113,6 +114,11 @@ public class Evasion extends EnchantmentWrapper implements IEnchant, Reloadable,
     }
 
     @Override
+    public int getmaxTotalLevel() {
+        return maxTotalLEvel;
+    }
+
+    @Override
     public void printInfo() {
         Debugger.chat("[evasion] Cached displayname: " + displayname,1);
         Debugger.chat("[evasion] Cached enchant chance: " + chance,1);
@@ -140,6 +146,7 @@ public class Evasion extends EnchantmentWrapper implements IEnchant, Reloadable,
 //            levelModifierMap.put(Integer.parseInt(s),config.getDouble("enchants.evasion.levelModifiers."+s));
 //        });
         maxlevel = EnchantsPlus.config.get().getInt("enchants.evasion.maxNaturalLevel");
+        maxTotalLEvel = EnchantsPlus.config.get().getInt("enchants.evasion.maxTotalLevel");
         blockedEnchantsments.clear();
         if (EnchantsPlus.config.get().contains("enchants.evasion.conflictsWith") ){
             List<String> list = EnchantsPlus.config.get().getStringList("enchants.healthboost.conflictsWith");

@@ -128,7 +128,7 @@ public class ItemEnchant implements Enchantable{
         ItemMeta meta = stack.getItemMeta();
         level = meta.getEnchantLevel(enchantment) == level ? level+1 : level; //todo for removal if error
         meta.removeEnchant(enchantment);
-        //level = Math.min(level, enchantment.getMaxLevel());
+        level = Math.min(level, ((IEnchant)enchantment).getmaxTotalLevel());
         meta.addEnchant(enchantment, level,true);
         meta.setLore(meta.getLore().stream().filter(line -> (!line.contains(((IEnchant) enchantment).getDisplayName()))).collect(Collectors.toList())); //удаляем старый лор
         Enchants.setCustomLore(meta, enchantment, level);
