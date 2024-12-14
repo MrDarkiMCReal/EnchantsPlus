@@ -189,5 +189,10 @@ public void deserealize(){
     public void printInfo() {
         Debugger.chat("[Health] Cached displayname: " + displayname,1);
         Debugger.chat("[Health] Cached enchant chance: " + chance,1);
+        Debugger.chat("[Health] Cached naturalMaxLevel: " + maxlevel,1);
+        Debugger.chat("[Health] Cached totalMaxLevel: " + maxTotalLEvel,1);
+        blockedEnchantsments.forEach(l -> {
+            Debugger.chat("[Health] Cached Blocked enchant:" + l,1);
+        });
     }
 }

@@ -23,6 +23,7 @@ import org.mrdarkimc.enchantsplus.enchants.interfaces.IEnchant;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Infoable;
 import org.mrdarkimc.enchantsplus.enchants.interfaces.Reloadable;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -58,75 +59,97 @@ public class CommandEnchant implements CommandExecutor {
         if (commandSender instanceof ConsoleCommandSender) {
             sender = (ConsoleCommandSender)commandSender;
         }
-            ItemStack stack = player.getInventory().getItemInMainHand();
-            if (!player.hasPermission("Enchantsplus.admin"))
+            ItemStack stack = player!= null ? player.getInventory().getItemInMainHand() : null;
+            if (!commandSender.hasPermission("Enchantsplus.admin"))
                 return true;
             if (!(strings.length > 0)){
-                player.sendMessage(ChatColor.GRAY + "(Только админ-комманды)Список комманд:");
-                player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " <зачарование> <уровень> - дать себе книгу");
-                player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " all <уровень> - дать себе все книги на уровень");
-                player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " give <player> <зачарование> <уровень> - игроку книгу");
-                player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " reload - перезагрузить кеш плагина");
-                player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " info - показать инфу о чарах");
-                player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " list - список зачарований");
-                player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " addAll - Добавить весь инвентарь в список разрешенных предметов");
+                commandSender.sendMessage(ChatColor.GRAY + "(Только админ-комманды)Список комманд:");
+                commandSender.sendMessage(ChatColor.GRAY + "/" + command.getName() + " <зачарование> <уровень> - дать себе книгу");
+                commandSender.sendMessage(ChatColor.GRAY + "/" + command.getName() + " all <уровень> - дать себе все книги на уровень");
+                commandSender.sendMessage(ChatColor.GRAY + "/" + command.getName() + " give <player> <зачарование> <уровень> - игроку книгу");
+                commandSender.sendMessage(ChatColor.GRAY + "/" + command.getName() + " reload - перезагрузить кеш плагина");
+                commandSender.sendMessage(ChatColor.GRAY + "/" + command.getName() + " info - показать инфу о чарах");
+                commandSender.sendMessage(ChatColor.GRAY + "/" + command.getName() + " list - список зачарований");
+                commandSender.sendMessage(ChatColor.GRAY + "/" + command.getName() + " addAll - Добавить весь инвентарь в список разрешенных предметов");
                 return true;
             }
 
             switch (strings[0]){
                 case "dozer":
-                    doEnchantCommand(player,stack, Enchants.DOZER,(strings.length > 1) ? Integer.parseInt(strings[1]) : 1);
-                    Debugger.chat("level is: " + ((strings.length > 1) ? Integer.parseInt(strings[1]) : 1),2);
-                    return true;
+                    if (player != null) {
+                        doEnchantCommand(player, stack, Enchants.DOZER, (strings.length > 1) ? Integer.parseInt(strings[1]) : 1);
+                        //Debugger.chat("level is: " + ((strings.length > 1) ? Integer.parseInt(strings[1]) : 1),2);
+                    }
+                        return true;
+
                 case "autosmelt":
-                    doEnchantCommand(player,stack, Enchants.AUTOSMELT,(strings.length > 1) ? Integer.parseInt(strings[1]) : 1);
-                    return true;
+                    if (player != null) {
+                        doEnchantCommand(player, stack, Enchants.AUTOSMELT, (strings.length > 1) ? Integer.parseInt(strings[1]) : 1);
+                    }
+                        return true;
+
                 case "magnet":
-                    doEnchantCommand(player,stack, Enchants.MAGNET,(strings.length > 1) ? Integer.parseInt(strings[1]) : 1);
-                    return true;
+                    if (player != null) {
+                        doEnchantCommand(player, stack, Enchants.MAGNET, (strings.length > 1) ? Integer.parseInt(strings[1]) : 1);
+                    }
+                        return true;
+
                 case "vampire":
-                    doEnchantCommand(player,stack, Enchants.VAMPIRE,(strings.length > 1) ? Integer.parseInt(strings[1]) : 1);
-                    return true;
+                    if (player != null) {
+                        doEnchantCommand(player, stack, Enchants.VAMPIRE, (strings.length > 1) ? Integer.parseInt(strings[1]) : 1);
+                    }
+                        return true;
+
                 case "poison":
-                    if (strings.length > 1) {
-                        doEnchantCommand(player,stack, Enchants.POISON,Integer.parseInt(strings[1]));
-                    }else player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " poison <уровень>");
-                    break;
+                    if (player != null) {
+                        if (strings.length > 1) {
+                            doEnchantCommand(player, stack, Enchants.POISON, Integer.parseInt(strings[1]));
+                        } else player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " poison <уровень>");
+                    }
+                        return true;
+
                 case "health":
-                    if (strings.length > 1) {
-                        doEnchantCommand(player,stack, Enchants.HEALTHBOOST,Integer.parseInt(strings[1]));
-                    }else player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " health <уровень>");
-                    break;
+                    if (player != null) {
+                        if (strings.length > 1) {
+                            doEnchantCommand(player, stack, Enchants.HEALTHBOOST, Integer.parseInt(strings[1]));
+                        } else player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " health <уровень>");
+                    }
+                        return true;
                 case "evasion":
                     if (strings.length > 1) {
                         doEnchantCommand(player,stack, Enchants.EVASION,Integer.parseInt(strings[1]));
                     }else player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " evasion <уровень>");
                     break;
                 case "fararrow":
-                    if (strings.length > 1) {
-                        doEnchantCommand(player,stack, Enchants.FARARROW,Integer.parseInt(strings[1]));
-                    }else player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " fararrow <уровень>");
-                    break;
+                    if (player != null) {
+                        if (strings.length > 1) {
+                            doEnchantCommand(player, stack, Enchants.FARARROW, Integer.parseInt(strings[1]));
+                        } else player.sendMessage(ChatColor.GRAY + "/" + command.getName() + " fararrow <уровень>");
+                    }
+                    return true;
                 case "reload":
                     EnchantsPlus.config.reloadConfig();
                     Reloadable.reloadAll();
-                    player.sendMessage(ChatColor.GREEN + "[StackableEnchants] конфиг перезагружен");
+                    commandSender.sendMessage(ChatColor.GREEN + "[StackableEnchants] конфиг перезагружен");
                     break;
                 case "addAll":
-                    ItemStack[] stacks = player.getInventory().getContents();
-                    List<String> materials = EnchantsPlus.config.get().getStringList("enchants.dozer.allowedMaterials");
-                    for (ItemStack itemStack : stacks) {
-                        if (itemStack == null)
-                            continue;
-                        Material material = itemStack.getType();
-                        if (material.equals(Material.AIR))
-                            continue;
-                        if (materials.contains(material.toString()))
-                            continue;
-                        materials.add(material.toString());
+                    if (player != null) {
+                        ItemStack[] stacks = player.getInventory().getContents();
+                        List<String> materials = EnchantsPlus.config.get().getStringList("enchants.dozer.allowedMaterials");
+                        for (ItemStack itemStack : stacks) {
+                            if (itemStack == null)
+                                continue;
+                            Material material = itemStack.getType();
+                            if (material.equals(Material.AIR))
+                                continue;
+                            if (materials.contains(material.toString()))
+                                continue;
+                            materials.add(material.toString());
+                        }
+
+                        EnchantsPlus.config.get().set("enchants.dozer.allowedMaterials", materials);
+                        EnchantsPlus.config.saveConfig();
                     }
-                    EnchantsPlus.config.get().set("enchants.dozer.allowedMaterials",materials);
-                    EnchantsPlus.config.saveConfig();
                     break;
                 case "give":
                     if (strings.length > 3) {
@@ -168,13 +191,9 @@ public class CommandEnchant implements CommandExecutor {
                     }else commandSender.sendMessage(ChatColor.GRAY + "/" + command.getName() + " give <игрок> <зачарование> <уровень>");
                     break;
                 case "toString":
-                    player.sendMessage(player.getInventory().getItemInMainHand().toString());
-                    player.sendMessage("Enchs: " + Enchantment.DAMAGE_ARTHROPODS.conflictsWith(Enchantment.DAMAGE_UNDEAD));
-                    break;
-                case "enchant":
-                    ItemStack stack1 =  player.getInventory().getItemInMainHand();
-                    stack1.addEnchantment(Enchants.EVASION,3);
-                    break;
+                    commandSender.sendMessage(player.getInventory().getItemInMainHand().toString());
+                    commandSender.sendMessage("Enchs: " + Enchantment.DAMAGE_ARTHROPODS.conflictsWith(Enchantment.DAMAGE_UNDEAD));
+                    return true;
                 case "info":
                     Enchants.customEnchants.forEach(e -> {
                         if (e instanceof Infoable) {
@@ -183,18 +202,20 @@ public class CommandEnchant implements CommandExecutor {
                     });
                     break;
                 case "list":
-                    player.sendMessage(ChatColor.GRAY + "Доступные зачарования: dozer,autosmelt,magnet,vampire,poison");
+                    commandSender.sendMessage(ChatColor.GRAY + "Доступные зачарования: dozer,autosmelt,magnet,vampire,poison,health,evasion,fararrow");
                     break;
                 case "all":
-                    player.getInventory().addItem(getCustomBook(Enchants.DOZER,1));
-                    player.getInventory().addItem(getCustomBook(Enchants.AUTOSMELT,1));
-                    player.getInventory().addItem(getCustomBook(Enchants.MAGNET,1));
-                    player.getInventory().addItem(getCustomBook(Enchants.VAMPIRE,Integer.parseInt(strings[1])));
-                    player.getInventory().addItem(getCustomBook(Enchants.POISON,Integer.parseInt(strings[1])));
-                    player.getInventory().addItem(getCustomBook(Enchants.HEALTHBOOST,Integer.parseInt(strings[1])));
-                    player.getInventory().addItem(getCustomBook(Enchants.EVASION,Integer.parseInt(strings[1])));
-                    player.getInventory().addItem(getCustomBook(Enchants.FARARROW,Integer.parseInt(strings[1])));
-                    break;
+                    if (player != null) {
+                        player.getInventory().addItem(getCustomBook(Enchants.DOZER, 1));
+                        player.getInventory().addItem(getCustomBook(Enchants.AUTOSMELT, 1));
+                        player.getInventory().addItem(getCustomBook(Enchants.MAGNET, 1));
+                        player.getInventory().addItem(getCustomBook(Enchants.VAMPIRE, Integer.parseInt(strings[1])));
+                        player.getInventory().addItem(getCustomBook(Enchants.POISON, Integer.parseInt(strings[1])));
+                        player.getInventory().addItem(getCustomBook(Enchants.HEALTHBOOST, Integer.parseInt(strings[1])));
+                        player.getInventory().addItem(getCustomBook(Enchants.EVASION, Integer.parseInt(strings[1])));
+                        player.getInventory().addItem(getCustomBook(Enchants.FARARROW, Integer.parseInt(strings[1])));
+                    }
+                        break;
             }
         return true;
     }

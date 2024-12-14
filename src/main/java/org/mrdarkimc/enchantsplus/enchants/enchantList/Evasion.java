@@ -126,9 +126,9 @@ public class Evasion extends EnchantmentWrapper implements IEnchant, Reloadable,
         levelModifierMap.forEach((key,value) -> {
             Debugger.chat("Level: " + key + " Multiplier: " + value,4);
         });
-        Debugger.chat("[vampire] Cached blockedEnchants");
+        Debugger.chat("[evasion] Cached blockedEnchants");
         blockedEnchantsments.forEach(l -> {
-            Debugger.chat("[vampire] Cached Blocked enchant:" + l,4);
+            Debugger.chat("[evasion] Cached Blocked enchant:" + l,4);
         });
     }
     @Override
